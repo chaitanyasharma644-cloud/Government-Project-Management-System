@@ -1,9 +1,12 @@
 ﻿using GPMS.Data;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Linq;
 
+
 namespace GPMS.Controllers
 {
+    [Authorize]
     public class DashboardController : Controller
     {
         private readonly AppDbContext _context;

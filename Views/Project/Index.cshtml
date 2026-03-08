@@ -3,9 +3,10 @@
     ViewData["Title"] = "Projects";
 }
 
+<link rel="stylesheet" href="~/css/project.css" />
+
 <div class="projects-page">
 
-    <!-- HEADER -->
     <div class="projects-header">
 
         <h2 class="page-title">PROJECTS</h2>
@@ -16,8 +17,34 @@
 
     </div>
 
+    <!-- SEARCH -->
+
+    <div class="project-search-container">
+
+        <div class="project-search-box">
+
+            <input type="text"
+                   id="projectSearch"
+                   placeholder="Search projects..."
+                   class="project-search-input"
+                   onkeyup="liveSearch()">
+
+            <button class="project-search-btn" onclick="searchProjects()">
+                Search
+            </button>
+
+        </div>
+
+        <div id="searchSuggestions" class="search-suggestions"></div>
+
+    </div>
+
+    <div id="noProjectMessage" class="no-project-message" style="display:none;">
+        No projects found.
+    </div>
 
     <!-- PROJECT GRID -->
+
     <div class="projects-grid">
 
         @foreach (var p in Model)
@@ -34,10 +61,6 @@
 
                 </div>
 
-                <p class="project-desc">
-                    @(p.ProjectDetails?.Length > 90 ? p.ProjectDetails.Substring(0, 90) + "..." : p.ProjectDetails)
-                </p>
-
                 <div class="project-meta">
 
                     <span>🧩 @p.Modules.Count modules</span>
@@ -50,27 +73,19 @@
 
                 <div class="project-actions">
 
-                    <a href="/Project/Details/@p.ProjectId"
-                       class="btn btn-light btn-sm">
+                    <a href="/Project/Index/@p.ProjectName" class="action-btn view-btn">
                         View
                     </a>
 
-                    <a href="/Project/Edit/@p.ProjectId"
-                       class="btn btn-outline-secondary btn-sm">
-                        Edit
-                    </a>
+                    <a href="/Project/Edit/@p.ProjectId">Edit</a>
 
                     <form method="post"
                           action="/Project/Delete/@p.ProjectId"
-                          style="display:inline"
                           onsubmit="return confirm('Delete project?')">
 
                         @Html.AntiForgeryToken()
 
-                        <button type="submit"
-                                class="btn btn-outline-danger btn-sm">
-                            Delete
-                        </button>
+                        <button type="submit">Delete</button>
 
                     </form>
 
@@ -83,8 +98,81 @@
 
 </div>
 
+<script>
 
-@if (!Model.Any())
-{
-    <div class="empty">No projects found.</div>
-}
+    function searchProjects(){
+
+        let input = document.getElementById("projectSearch").value.toLowerCase();
+        let cards = document.querySelectorAll(".project-card");
+        let found = false;
+
+        cards.forEach(card => {
+
+            let name = card.querySelector(".project-name").innerText.toLowerCase();
+
+            if(name.includes(input)){
+                card.style.display = "block";
+                found = true;
+            } else {
+                card.style.display = "none";
+            }
+
+        });
+
+        let msg = document.getElementById("noProjectMessage");
+
+        if(!found){
+            msg.style.display = "block";
+        } else {
+            msg.style.display = "none";
+        }
+
+    }
+
+    function liveSearch(){
+
+        let input = document.getElementById("projectSearch").value.toLowerCase();
+        let cards = document.querySelectorAll(".project-card");
+        let suggestions = document.getElementById("searchSuggestions");
+
+        suggestions.innerHTML = "";
+
+        if(input === ""){
+            cards.forEach(card => card.style.display = "block");
+            document.getElementById("noProjectMessage").style.display = "none";
+            return;
+        }
+
+        cards.forEach(card => {
+
+            let name = card.querySelector(".project-name").innerText;
+
+            if(name.toLowerCase().includes(input)){
+
+                let item = document.createElement("div");
+                item.classList.add("suggestion-item");
+                item.innerText = name;
+
+                item.onclick = function(){
+                    document.getElementById("projectSearch").value = name;
+                    suggestions.innerHTML = "";
+                    searchProjects();
+                }
+
+                suggestions.appendChild(item);
+            }
+
+        });
+
+    }
+
+    document.getElementById("projectSearch")
+    .addEventListener("keyup", function(e){
+
+        if(e.key === "Enter"){
+            searchProjects();
+        }
+
+    });
+
+</script>

@@ -1,0 +1,452 @@
+﻿/* ================================
+   PROJECT PAGE
+================================ */
+
+.projects-page {
+    padding: 30px;
+    max-width: 1300px;
+    margin: auto;
+}
+
+/* HEADER */
+
+.projects-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 30px;
+}
+
+.page-title {
+    font-size: 28px;
+    font-weight: 600;
+}
+
+
+/* ================================
+   SEARCH BAR
+================================ */
+
+.project-search-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin: 30px 0;
+    position: relative;
+}
+
+.project-search-box {
+    display: flex;
+    width: 750px;
+}
+
+.project-search-input {
+    flex: 1;
+    padding: 12px;
+    font-size: 16px;
+    border: 1px solid #ccc;
+    border-right: none;
+    border-radius: 6px 0 0 6px;
+}
+
+.project-search-btn {
+    padding: 12px 25px;
+    background: #3b82f6;
+    color: white;
+    border: none;
+    border-radius: 0 6px 6px 0;
+    cursor: pointer;
+}
+
+    .project-search-btn:hover {
+        background: #2563eb;
+    }
+
+
+/* ================================
+   SEARCH SUGGESTIONS
+================================ */
+
+.search-suggestions {
+    width: 750px;
+    background: white;
+    border: 1px solid #ddd;
+    border-top: none;
+    position: absolute;
+    top: 55px;
+    z-index: 10;
+}
+
+.suggestion-item {
+    padding: 10px;
+    cursor: pointer;
+}
+
+    .suggestion-item:hover {
+        background: #f3f4f6;
+    }
+
+
+/* ================================
+   NOT FOUND MESSAGE
+================================ */
+
+.no-project-message {
+    text-align: center;
+    margin-top: 30px;
+    font-size: 20px;
+    color: #888;
+}
+
+
+/* ================================
+   PROJECT GRID
+================================ */
+
+.projects-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px,1fr));
+    gap: 25px;
+}
+
+
+/* ================================
+   PROJECT CARD
+================================ */
+
+.project-card {
+    background: white;
+    border: 1px solid #e5e7eb;
+    border-top: 4px solid #f59e0b;
+    border-radius: 10px;
+    padding: 20px;
+    transition: all 0.25s ease;
+}
+
+    .project-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 6px 20px rgba(0,0,0,0.08);
+    }
+
+
+/* CARD HEADER */
+
+.project-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.project-name {
+    font-weight: 600;
+}
+
+
+/* STATUS */
+
+.status-badge {
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 500;
+}
+
+    .status-badge.ongoing {
+        background: #e7f1ff;
+        color: #1a73e8;
+    }
+
+    .status-badge.completed {
+        background: #e6f7ec;
+        color: #1e7e34;
+    }
+
+
+/* DESCRIPTION */
+
+.project-desc {
+    color: #555;
+    margin: 10px 0;
+}
+
+
+/* META */
+
+.project-meta {
+    display: flex;
+    gap: 20px;
+    font-size: 14px;
+    color: #666;
+}
+
+
+/* ================================
+   PROJECT ACTION BUTTONS
+================================ */
+
+.project-actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 10px;
+}
+
+    .project-actions a,
+    .project-actions button {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 6px 16px;
+        font-size: 14px;
+        border-radius: 6px;
+        text-decoration: none;
+        background: white;
+        border: 1px solid #cbd5e1;
+        color: #1e293b;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+
+    .project-actions button {
+        border: 1px solid #ef4444;
+        color: #ef4444;
+    }
+
+    .project-actions a:first-child:hover {
+        background: #3b82f6;
+        border-color: #3b82f6;
+        color: white;
+    }
+
+    .project-actions a:nth-child(2):hover {
+        background: #64748b;
+        border-color: #64748b;
+        color: white;
+    }
+
+    .project-actions button:hover {
+        background: #ef4444;
+        border-color: #ef4444;
+        color: white;
+    }
+
+
+/* ================================
+   PROJECT DETAILS PAGE
+================================ */
+
+.project-details-page {
+    max-width: 1100px;
+    margin: auto;
+    padding: 30px;
+}
+
+.project-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.project-info {
+    margin-top: 15px;
+}
+
+
+/* ================================
+   MODULE SECTION
+================================ */
+
+.modules-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 30px;
+}
+
+.modules-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 20px;
+    margin-top: 20px;
+}
+
+.module-card {
+    background: white;
+    border: 1px solid #e5e7eb;
+    border-top: 4px solid #22c55e;
+    border-radius: 10px;
+    padding: 20px;
+}
+
+    .module-card h4 {
+        margin-bottom: 10px;
+    }
+
+    .module-card:hover {
+        box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    }
+
+
+/* ================================
+   MODULE ACTIONS
+================================ */
+
+.module-actions {
+    margin-top: 10px;
+    display: flex;
+    gap: 10px;
+}
+
+    .module-actions a {
+        padding: 6px 12px;
+        border-radius: 6px;
+        text-decoration: none;
+        font-size: 14px;
+        transition: 0.2s;
+    }
+
+/* VIEW BUTTON */
+
+.view-btn {
+    border: 1px solid #3b82f6;
+    color: #3b82f6;
+}
+
+    .view-btn:hover {
+        background: #3b82f6;
+        color: white;
+    }
+
+/* EDIT BUTTON */
+
+.edit-btn {
+    border: 1px solid #22c55e;
+    color: #22c55e;
+}
+
+    .edit-btn:hover {
+        background: #22c55e;
+        color: white;
+    }
+
+/* DELETE BUTTON */
+
+.delete-btn {
+    border: 1px solid #ef4444;
+    color: #ef4444;
+}
+
+    .delete-btn:hover {
+        background: #ef4444;
+        color: white;
+    }
+
+
+/* ================================
+   ADD MODULE BUTTON
+================================ */
+
+.add-module-btn {
+    background: #2563eb;
+    color: white;
+    padding: 8px 16px;
+    border-radius: 6px;
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 500;
+}
+
+    .add-module-btn:hover {
+        background: #1d4ed8;
+    }
+
+
+/* ================================
+   CREATE + EDIT PAGE COMMON
+================================ */
+
+.page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 25px;
+}
+
+
+/* FORM CARD */
+
+.form-card,
+.edit-card {
+    max-width: 900px;
+    background: white;
+    padding: 30px;
+    border-radius: 12px;
+    border: 1px solid #e5e7eb;
+    box-shadow: 0 4px 14px rgba(0,0,0,0.05);
+}
+
+
+/* FORM GROUP */
+
+.form-group {
+    margin-bottom: 18px;
+}
+
+    .form-group label {
+        display: block;
+        font-weight: 500;
+        margin-bottom: 6px;
+        color: #374151;
+    }
+
+
+/* INPUT */
+
+.form-control {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    font-size: 14px;
+}
+
+    .form-control:focus {
+        outline: none;
+        border-color: #3b82f6;
+    }
+
+
+/* TEXTAREA */
+
+textarea.form-control {
+    min-height: 90px;
+}
+
+
+/* FORM ROW */
+
+.form-row {
+    display: flex;
+    gap: 20px;
+}
+
+    .form-row .form-group {
+        flex: 1;
+    }
+
+
+/* SAVE BUTTON */
+
+.btn-save {
+    margin-top: 10px;
+    padding: 12px 20px;
+    background: #3b82f6;
+    border: none;
+    color: white;
+    border-radius: 8px;
+    font-weight: 500;
+    cursor: pointer;
+}
+
+    .btn-save:hover {
+        background: #2563eb;
+    }

@@ -1,0 +1,65 @@
+﻿@model Project
+
+<link rel="stylesheet" href="~/css/project-details.css" />
+
+<div class="project-details-page">
+
+    <div class="project-header">
+
+        <h2>@Model.ProjectName</h2>
+
+        <span class="status-badge @(Model.ProjectStatus == "Completed" ? "completed" : "ongoing")">
+            @Model.ProjectStatus
+        </span>
+
+    </div>
+
+    <div class="project-info">
+
+        <p>@Model.ProjectDetails</p>
+
+        <div class="project-meta">
+            <span>📅 Start: @Model.ProjectStartDate.ToString("MMM dd, yyyy")</span>
+        </div>
+
+    </div>
+
+    <hr />
+
+    <div class="modules-header">
+
+        <h3>Modules</h3>
+
+        <a href="/Module/Create?projectId=@Model.ProjectId"
+           class="add-module-btn">
+            + Add Module
+        </a>
+
+    </div>
+
+    <div class="modules-grid">
+
+        @foreach (var m in Model.Modules)
+        {
+            <div class="module-card">
+
+                <h4>@m.ModuleName</h4>
+
+                <p>Status: @m.ModuleStatus</p>
+
+                <div class="module-actions">
+
+                    <a href="/Module/Details/@m.ModuleId" class="view-btn">View</a>
+
+                    <a href="/Module/Edit/@m.ModuleId" class="edit-btn">Edit</a>
+
+                    <a href="/Module/Delete/@m.ModuleId" class="delete-btn">Delete</a>
+
+                </div>
+
+            </div>
+        }
+
+    </div>
+
+</div>

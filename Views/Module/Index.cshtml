@@ -1,0 +1,100 @@
+﻿@model IEnumerable<Module>
+
+@{
+    ViewData["Title"] = "Modules";
+}
+
+<link rel="stylesheet" href="~/css/module.css" />
+
+<div class="modules-page">
+
+    <!-- HEADER -->
+    <div class="modules-header">
+
+        <h2>Modules</h2>
+
+        <a href="/Module/Create" class="btn-new-module">
+            + New Module
+        </a>
+
+    </div>
+
+
+    <!-- FILTER BAR -->
+
+    <div class="modules-filter">
+
+        <!-- PROJECT SELECT -->
+
+        <select class="project-select">
+            <option value="">Select Project</option>
+
+            @foreach (var p in ViewBag.Projects)
+            {
+                <option value="@p.ProjectId">@p.ProjectName</option>
+            }
+
+        </select>
+
+
+        <!-- SEARCH -->
+
+        <input type="text"
+               placeholder="Search modules..."
+               class="module-search" />
+
+        <button class="module-search-btn">
+            Search
+        </button>
+
+    </div>
+
+
+    <!-- MODULE GRID -->
+
+    <div class="modules-grid">
+
+        @foreach (var m in Model)
+        {
+
+            <div class="module-card">
+
+                <div class="card-top">
+
+                    <h3>@m.ModuleName</h3>
+
+                    <span class="status completed">
+                        @m.ModuleStatus
+                    </span>
+
+                </div>
+
+                <div class="card-info">
+
+                    <span>🧩 @m.Tasks.Count tasks</span>
+
+                    <span>📅 @m.ModuleStartDate?.ToString("MMM dd, yyyy")</span>
+
+                </div>
+
+                <hr>
+
+                <div class="module-actions">
+
+                    <a href="/Module/Details/@m.ModuleId">View</a>
+
+                    <a href="/Module/Edit/@m.ModuleId">Edit</a>
+
+                    <form method="post" action="/Module/Delete/@m.ModuleId">
+                        <button type="submit">Delete</button>
+                    </form>
+
+                </div>
+
+            </div>
+
+        }
+
+    </div>
+
+</div>

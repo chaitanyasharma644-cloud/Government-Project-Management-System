@@ -22,21 +22,21 @@
         </div>
 
         <div class="stat-card modules">
+            <div class="icon">✔</div>
+            <div class="number">@ViewBag.Completed</div>
+            <div class="label">COMPLETED</div>
+        </div>
+
+        <div class="stat-card tasks">
             <div class="icon">🧩</div>
             <div class="number">@ViewBag.Modules</div>
             <div class="label">MODULES</div>
         </div>
 
-        <div class="stat-card tasks">
-            <div class="icon">✔</div>
-            <div class="number">@ViewBag.Tasks</div>
-            <div class="label">TASKS</div>
-        </div>
-
         <div class="stat-card completed">
             <div class="icon">🎯</div>
-            <div class="number">@ViewBag.Completed</div>
-            <div class="label">COMPLETED</div>
+            <div class="number">@ViewBag.Tasks</div>
+            <div class="label">TASKS</div>
         </div>
 
         <div class="stat-card assignments">
@@ -68,17 +68,21 @@
 
         <div class="actions">
 
-            <button class="qa-employee">+ New Employee</button>
-
-            <button class="qa-project">+ New Project</button>
+            <button class="qa-project" onclick="location.href='/Project/Create'">
+                + New Project
+            </button>
 
             <button class="qa-module">+ New Module</button>
 
             <button class="qa-task">+ New Task</button>
 
+            <button class="qa-employee">+ New Employee</button>
+
             <button class="qa-assignment">+ New Assignment</button>
 
             <button class="qa-designation">+ New Designation</button>
+
+            <button class="qa-role">+ New Role</button>
 
         </div>
 

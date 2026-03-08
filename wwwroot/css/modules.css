@@ -1,0 +1,205 @@
+﻿/* PAGE */
+
+.modules-page {
+    max-width: 1200px;
+    margin: auto;
+}
+
+
+/* HEADER */
+
+.modules-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 25px;
+}
+
+    .modules-header h2 {
+        margin: 0;
+    }
+
+
+/* NEW MODULE BUTTON */
+
+.btn-new-module {
+    background: #2563eb;
+    color: white;
+    padding: 8px 18px;
+    border-radius: 8px;
+    text-decoration: none;
+    font-weight: 500;
+}
+
+    .btn-new-module:hover {
+        background: #1d4ed8;
+    }
+
+
+/* FILTER BAR */
+
+.modules-filter {
+    display: flex;
+    gap: 15px;
+    margin-bottom: 30px;
+}
+
+
+/* PROJECT SELECT */
+
+.project-select {
+    padding: 10px;
+    border: 1px solid #d1d5db;
+    border-radius: 6px;
+}
+
+
+/* SEARCH */
+
+.module-search {
+    flex: 1;
+    padding: 10px;
+    border: 1px solid #d1d5db;
+    border-radius: 6px;
+}
+
+
+/* SEARCH BUTTON */
+
+.module-search-btn {
+    padding: 10px 20px;
+    background: #3b82f6;
+    border: none;
+    color: white;
+    border-radius: 6px;
+    cursor: pointer;
+}
+
+    .module-search-btn:hover {
+        background: #2563eb;
+    }
+
+
+/* GRID */
+
+.modules-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px,1fr));
+    gap: 20px;
+}
+
+
+/* CARD */
+
+.module-card {
+    background: white;
+    border: 1px solid #e5e7eb;
+    border-top: 4px solid #22c55e;
+    border-radius: 12px;
+    padding: 22px;
+    transition: all 0.2s ease;
+}
+
+    .module-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 6px 15px rgba(0,0,0,0.08);
+    }
+
+
+/* CARD HEADER */
+
+.card-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+    .card-top h3 {
+        margin: 0;
+        font-size: 20px;
+        font-weight: 600;
+    }
+
+
+/* STATUS BADGE */
+
+.status {
+    padding: 6px 14px;
+    border-radius: 20px;
+    font-size: 13px;
+    font-weight: 500;
+}
+
+    .status.completed {
+        background: #d1fae5;
+        color: #065f46;
+    }
+
+
+/* DESCRIPTION */
+
+.card-desc {
+    margin: 12px 0;
+    color: #6b7280;
+}
+
+
+/* INFO ROW */
+
+.card-info {
+    display: flex;
+    gap: 25px;
+    font-size: 14px;
+    color: #374151;
+    margin-bottom: 12px;
+}
+
+
+/* DIVIDER */
+
+.module-card hr {
+    border: none;
+    border-top: 1px solid #e5e7eb;
+    margin: 12px 0;
+}
+
+
+/* ACTION BUTTONS */
+
+.module-actions {
+    display: flex;
+    gap: 12px;
+}
+
+    .module-actions a,
+    .module-actions button {
+        padding: 7px 14px;
+        border-radius: 8px;
+        text-decoration: none;
+        border: 1px solid #3b82f6;
+        background: white;
+        color: #3b82f6;
+        font-size: 14px;
+        cursor: pointer;
+    }
+
+
+    /* DELETE BUTTON */
+
+    .module-actions button {
+        border-color: #ef4444;
+        color: #ef4444;
+    }
+
+
+    /* HOVER EFFECT */
+
+    .module-actions a:hover {
+        background: #3b82f6;
+        color: white;
+    }
+
+    .module-actions button:hover {
+        background: #ef4444;
+        color: white;
+    }
