@@ -1,3 +1,6 @@
+wwwroot\css\dashboard.css
+wwwroot\css\modules.css
+wwwroot\css\project.css
 wwwroot\css\site.css
 wwwroot\favicon.ico
 wwwroot\js\site.js
@@ -61,9 +64,6 @@ wwwroot\lib\jquery\dist\jquery.slim.js
 wwwroot\lib\jquery\dist\jquery.slim.min.js
 wwwroot\lib\jquery\dist\jquery.slim.min.map
 wwwroot\lib\jquery\LICENSE.txt
-wwwroot\css\project.css
-wwwroot\css\dashboard.css
-wwwroot\css\modules.css
 D:\rubucode\nic project\GPMS\wwwroot\css\site.css
 D:\rubucode\nic project\GPMS\wwwroot\favicon.ico
 D:\rubucode\nic project\GPMS\wwwroot\js\site.js

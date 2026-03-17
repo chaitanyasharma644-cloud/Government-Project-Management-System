@@ -1,8 +1,23 @@
-﻿/* PAGE */
+﻿/* =====================================
+   GLOBAL RESET / BASE
+===================================== */
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+}
+
+
+/* =====================================
+   MODULES PAGE
+===================================== */
 
 .modules-page {
     max-width: 1200px;
     margin: auto;
+    padding: 20px;
 }
 
 
@@ -16,7 +31,8 @@
 }
 
     .modules-header h2 {
-        margin: 0;
+        font-size: 26px;
+        font-weight: 600;
     }
 
 
@@ -25,10 +41,11 @@
 .btn-new-module {
     background: #2563eb;
     color: white;
-    padding: 8px 18px;
+    padding: 10px 20px;
     border-radius: 8px;
     text-decoration: none;
     font-weight: 500;
+    transition: 0.2s;
 }
 
     .btn-new-module:hover {
@@ -36,35 +53,27 @@
     }
 
 
-/* FILTER BAR */
+/* =====================================
+   FILTER BAR
+===================================== */
 
 .modules-filter {
     display: flex;
     gap: 15px;
     margin-bottom: 30px;
+    flex-wrap: wrap;
 }
 
-
-/* PROJECT SELECT */
-
-.project-select {
+.project-select,
+.module-search {
     padding: 10px;
     border: 1px solid #d1d5db;
     border-radius: 6px;
 }
-
-
-/* SEARCH */
 
 .module-search {
     flex: 1;
-    padding: 10px;
-    border: 1px solid #d1d5db;
-    border-radius: 6px;
 }
-
-
-/* SEARCH BUTTON */
 
 .module-search-btn {
     padding: 10px 20px;
@@ -73,6 +82,7 @@
     color: white;
     border-radius: 6px;
     cursor: pointer;
+    transition: 0.2s;
 }
 
     .module-search-btn:hover {
@@ -80,16 +90,18 @@
     }
 
 
-/* GRID */
+/* =====================================
+   MODULE GRID
+===================================== */
 
 .modules-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(280px,1fr));
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
     gap: 20px;
 }
 
 
-/* CARD */
+/* MODULE CARD */
 
 .module-card {
     background: white;
@@ -101,8 +113,8 @@
 }
 
     .module-card:hover {
-        transform: translateY(-3px);
-        box-shadow: 0 6px 15px rgba(0,0,0,0.08);
+        transform: translateY(-4px);
+        box-shadow: 0 8px 20px rgba(0,0,0,0.08);
     }
 
 
@@ -115,8 +127,7 @@
 }
 
     .card-top h3 {
-        margin: 0;
-        font-size: 20px;
+        font-size: 18px;
         font-weight: 600;
     }
 
@@ -135,12 +146,23 @@
         color: #065f46;
     }
 
+    .status.ongoing {
+        background: #dbeafe;
+        color: #1d4ed8;
+    }
+
+    .status.pending {
+        background: #fef3c7;
+        color: #92400e;
+    }
+
 
 /* DESCRIPTION */
 
 .card-desc {
     margin: 12px 0;
     color: #6b7280;
+    font-size: 14px;
 }
 
 
@@ -148,8 +170,8 @@
 
 .card-info {
     display: flex;
-    gap: 25px;
-    font-size: 14px;
+    gap: 20px;
+    font-size: 13px;
     color: #374151;
     margin-bottom: 12px;
 }
@@ -168,21 +190,25 @@
 
 .module-actions {
     display: flex;
-    gap: 12px;
+    gap: 10px;
 }
 
     .module-actions a,
     .module-actions button {
         padding: 7px 14px;
         border-radius: 8px;
-        text-decoration: none;
         border: 1px solid #3b82f6;
         background: white;
         color: #3b82f6;
-        font-size: 14px;
+        font-size: 13px;
         cursor: pointer;
+        transition: 0.2s;
     }
 
+        .module-actions a:hover {
+            background: #3b82f6;
+            color: white;
+        }
 
     /* DELETE BUTTON */
 
@@ -191,15 +217,128 @@
         color: #ef4444;
     }
 
+        .module-actions button:hover {
+            background: #ef4444;
+            color: white;
+        }
 
-    /* HOVER EFFECT */
 
-    .module-actions a:hover {
-        background: #3b82f6;
-        color: white;
+/* =====================================
+   MODULE EDIT PAGE
+===================================== */
+
+.module-page {
+    max-width: 900px;
+    margin: 40px auto;
+    padding: 10px;
+}
+
+.module-edit-card {
+    background: #ffffff;
+    border-radius: 14px;
+    padding: 30px;
+    border: 1px solid #e5e7eb;
+    box-shadow: 0 8px 25px rgba(0,0,0,0.05);
+}
+
+.page-title {
+    font-size: 26px;
+    font-weight: 600;
+    margin-bottom: 25px;
+    color: #1f2937;
+}
+
+
+/* FORM */
+
+.form-group {
+    margin-bottom: 18px;
+}
+
+    .form-group label {
+        font-weight: 500;
+        color: #374151;
+        font-size: 14px;
+        display: block;
+        margin-bottom: 6px;
     }
 
-    .module-actions button:hover {
-        background: #ef4444;
-        color: white;
+.form-control {
+    width: 100%;
+    padding: 10px 12px;
+    border-radius: 8px;
+    border: 1px solid #d1d5db;
+    background: #ffffff;
+    color: #111827;
+    font-size: 14px;
+    transition: all 0.2s;
+}
+
+    .form-control:focus {
+        outline: none;
+        border-color: #2563eb;
+        box-shadow: 0 0 0 2px rgba(37,99,235,0.15);
     }
+
+/* VALIDATION */
+
+.text-danger {
+    font-size: 12px;
+    margin-top: 4px;
+    display: block;
+}
+
+
+/* ROW LAYOUT */
+
+.module-edit-row {
+    display: flex;
+    gap: 20px;
+    flex-wrap: wrap;
+}
+
+    .module-edit-row .form-group {
+        flex: 1;
+    }
+
+
+/* BUTTON */
+
+.btn-save {
+    background: #2563eb;
+    color: white;
+    border: none;
+    padding: 12px 20px;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    margin-top: 10px;
+    transition: 0.2s;
+}
+
+    .btn-save:hover {
+        background: #1d4ed8;
+    }
+
+
+/* =====================================
+   RESPONSIVE
+===================================== */
+
+@media (max-width: 768px) {
+
+    .modules-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+    }
+
+    .module-edit-row {
+        flex-direction: column;
+    }
+
+    .modules-filter {
+        flex-direction: column;
+    }
+}

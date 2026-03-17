@@ -11,7 +11,7 @@
     <!-- HEADER -->
     <div class="modules-header">
 
-        <h2>Modules</h2>
+        <h2>MODULES</h2>
 
         <a href="/Module/Create" class="btn-new-module">
             + New Module
@@ -71,7 +71,7 @@
 
                 <div class="card-info">
 
-                    <span>🧩 @m.Tasks.Count tasks</span>
+                    <span>🎯 @m.Tasks.Count tasks</span>
 
                     <span>📅 @m.ModuleStartDate?.ToString("MMM dd, yyyy")</span>
 
@@ -85,8 +85,16 @@
 
                     <a href="/Module/Edit/@m.ModuleId">Edit</a>
 
-                    <form method="post" action="/Module/Delete/@m.ModuleId">
-                        <button type="submit">Delete</button>
+                    <!-- DELETE WITH CONFIRMATION -->
+
+                    <form method="post"
+                          action="/Module/Delete/@m.ModuleId"
+                          onsubmit="return confirm('Delete module?');">
+
+                        <button type="submit" class="btn-delete">
+                            Delete
+                        </button>
+
                     </form>
 
                 </div>
