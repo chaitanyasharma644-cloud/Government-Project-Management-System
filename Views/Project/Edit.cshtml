@@ -1,68 +1,60 @@
-﻿@model Project
-@{
-    ViewData["Title"] = "Edit Project";
-}
+﻿@model GPMS.Models.Project
 
 <link rel="stylesheet" href="~/css/project-edit.css" />
 
-<div class="edit-page">
+<div class="module-page">
 
-    <div class="edit-card">
+    <div class="module-edit-card">
+
+        <h2 class="page-title">Edit Project</h2>
 
         <form asp-action="Edit" method="post">
 
+            @Html.AntiForgeryToken()
+
             <input type="hidden" asp-for="ProjectId" />
 
+            <!-- Project Name -->
             <div class="form-group">
-
                 <label>Project Name</label>
-
                 <input asp-for="ProjectName" class="form-control" />
-
             </div>
 
+            <!-- Details -->
             <div class="form-group">
-
                 <label>Details</label>
-
-                <textarea asp-for="ProjectDetails" class="form-control textarea"></textarea>
-
+                <textarea asp-for="ProjectDetails" rows="3" class="form-control"></textarea>
             </div>
 
-            <div class="form-row">
+            <!-- Row -->
+            <div class="module-edit-row">
 
                 <div class="form-group">
-
                     <label>Status</label>
-
                     <select asp-for="ProjectStatus" class="form-control">
-
-                        <option>Ongoing</option>
-                        <option>Completed</option>
-
+                        <option value="Ongoing">Ongoing</option>
+                        <option value="Completed">Completed</option>
                     </select>
-
                 </div>
 
                 <div class="form-group">
-
                     <label>Start Date</label>
-
                     <input asp-for="ProjectStartDate"
                            type="date"
                            class="form-control" />
-
                 </div>
 
             </div>
 
-            <div class="form-group">
+            <!-- Row -->
+            <div class="module-edit-row">
 
-                <label>End Date</label>
-
-                <input asp-for="ProjectEndDate"
-                       type="date"
-                       class="form-control" />
+                <div class="form-group">
+                    <label>End Date</label>
+                    <input asp-for="ProjectEndDate"
+                           type="date"
+                           class="form-control" />
+                </div>
 
             </div>
 

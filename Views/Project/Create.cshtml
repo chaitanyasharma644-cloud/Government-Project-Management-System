@@ -1,89 +1,74 @@
-﻿@model Project
-@{
-    ViewData["Title"] = "Create Project";
-}
+﻿@model GPMS.Models.Project
 
-<div class="page-header">
-    <h2>Create Project</h2>
-    <a href="/Project/Index" class="btn btn-light">← Back</a>
-</div>
+<link rel="stylesheet" href="~/css/project-edit.css" />
 
-<div class="form-card">
+<div class="module-page">
 
-    <form asp-action="Create" method="post">
+    <div class="module-edit-card">
 
-        @Html.AntiForgeryToken()
+        <h2 class="page-title">Create Project</h2>
 
-        <!-- Project Name -->
-        <div class="form-group">
-            <label>Project Name</label>
+        <form asp-action="Create" method="post">
 
-            <input asp-for="ProjectName"
-                   class="form-control"
-                   placeholder="e.g. E-Governance Portal" />
+            @Html.AntiForgeryToken()
 
-            <span asp-validation-for="ProjectName"
-                  class="text-danger"></span>
-        </div>
-
-
-        <!-- Details -->
-        <div class="form-group">
-            <label>Details</label>
-
-            <textarea asp-for="ProjectDetails"
-                      class="form-control"
-                      rows="3"
-                      placeholder="Project scope and objectives...">
-            </textarea>
-        </div>
-
-
-        <!-- Status + Start Date -->
-        <div class="form-row">
-
-            <div class="form-group col-md-6">
-                <label>Status</label>
-
-                <select asp-for="ProjectStatus"
-                        class="form-control">
-
-                    <option value="">— Select —</option>
-                    <option>Ongoing</option>
-                    <option>Completed</option>
-
-                </select>
-            </div>
-
-
-            <div class="form-group col-md-6">
-                <label>Start Date</label>
-
-                <input asp-for="ProjectStartDate"
+            <!-- PROJECT NAME -->
+            <div class="form-group">
+                <label>Project Name</label>
+                <input asp-for="ProjectName"
                        class="form-control"
-                       type="date" />
-
-                <span asp-validation-for="ProjectStartDate"
-                      class="text-danger"></span>
+                       placeholder="e.g. E-Governance Portal" />
+                <span asp-validation-for="ProjectName" class="text-danger"></span>
             </div>
 
-        </div>
+            <!-- DETAILS -->
+            <div class="form-group">
+                <label>Details</label>
+                <textarea asp-for="ProjectDetails"
+                          class="form-control"
+                          placeholder="Project scope and objectives..."></textarea>
+            </div>
 
+            <!-- STATUS + START DATE -->
+            <div class="form-row">
 
-        <!-- End Date -->
-        <div class="form-group">
-            <label>End Date</label>
+                <div class="form-group half">
+                    <label>Status</label>
+                    <select asp-for="ProjectStatus" class="form-control">
+                        <option value="">-- Select --</option>
+                        <option>Ongoing</option>
+                        <option>Completed</option>
+                    </select>
+                </div>
 
-            <input asp-for="ProjectEndDate"
-                   class="form-control"
-                   type="date" />
-        </div>
+                <div class="form-group half">
+                    <label>Start Date</label>
+                    <input asp-for="ProjectStartDate"
+                           type="date"
+                           class="form-control" />
+                </div>
 
+            </div>
 
-        <button type="submit" class="btn btn-primary">
-            Create Project
-        </button>
+            <!-- END DATE -->
+            <div class="form-group">
+                <label>End Date</label>
+                <input asp-for="ProjectEndDate"
+                       type="date"
+                       class="form-control" />
+            </div>
 
-    </form>
+            <!-- BUTTON -->
+            <button type="submit" class="btn btn-primary">
+                Create Project
+            </button>
+
+        </form>
+
+    </div>
 
 </div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}
