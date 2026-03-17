@@ -3,6 +3,7 @@
 ================================ */
 
 .projects-page {
+    padding: 30px;
     max-width: 1300px;
     margin: auto;
 }
@@ -303,7 +304,6 @@
         transition: 0.2s;
     }
 
-
 /* VIEW BUTTON */
 
 .view-btn {
@@ -316,7 +316,6 @@
         color: white;
     }
 
-
 /* EDIT BUTTON */
 
 .edit-btn {
@@ -328,7 +327,6 @@
         background: #22c55e;
         color: white;
     }
-
 
 /* DELETE BUTTON */
 
@@ -374,22 +372,11 @@
 }
 
 
-/* ================================
-   CENTER EDIT FORM
-================================ */
-
-.form-wrapper {
-    display: flex;
-    justify-content: center;
-    margin-top: 40px;
-}
-
-
 /* FORM CARD */
 
 .form-card,
 .edit-card {
-    width: 900px;
+    max-width: 900px;
     background: white;
     padding: 30px;
     border-radius: 12px;
