@@ -1,0 +1,80 @@
+﻿@model GPMS.ViewModels.RoleCreateViewModel
+
+<div class="page-container">
+
+    <div class="form-card">
+
+    <!-- PAGE HEADER -->
+    <div class="page-header">
+        <h2 class="page-title">Create Role</h2>
+    </div>
+
+    <!-- FORM CARD -->
+    
+
+        <form asp-action="Create" method="post">
+            @Html.AntiForgeryToken()
+
+            <!-- ROLE NAME -->
+            <div class="form-group">
+                <label>Role Name</label>
+                <input asp-for="RoleName" class="form-control" placeholder="Enter role name" />
+                <span asp-validation-for="RoleName" class="text-danger"></span>
+            </div>
+
+            <!-- DESCRIPTION -->
+            <div class="form-group">
+                <label>Description</label>
+                <textarea asp-for="Description" class="form-control" rows="3"
+                          placeholder="Enter role description"></textarea>
+            </div>
+
+            <!-- PERMISSIONS -->
+            <div class="form-group">
+                <label>Select Permissions</label>
+
+                @if (Model.Permissions != null && Model.Permissions.Any())
+                {
+                    <div class="cards-grid">
+
+                        @for (int i = 0; i < Model.Permissions.Count; i++)
+                        {
+                            <label class="card role permission-card">
+
+                                <!-- HIDDEN FIELDS -->
+                                <input type="hidden" asp-for="Permissions[i].Id" />
+
+                                <!-- CHECKBOX -->
+                                <input type="checkbox"
+                                       asp-for="Permissions[i].IsSelected"
+                                       class="permission-checkbox" />
+
+                                <!-- CONTENT -->
+                                <div class="permission-content">
+                                    <h4>@Model.Permissions[i].PermissionName</h4>
+                                    <p class="permission-text">Grant access</p>
+                                </div>
+
+                            </label>
+                        }
+
+                    </div>
+                }
+                else
+                {
+                    <p class="no-data">No permissions available</p>
+                }
+
+            </div>
+
+            <!-- BUTTONS -->
+            <div class="form-actions">
+                <button type="submit" class="btn-save">
+                    Create Role
+                </button>
+                <a href="/Role/Index" class="btn">Cancel</a>
+            </div>
+
+        </form>
+    </div>
+</div>

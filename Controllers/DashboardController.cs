@@ -24,12 +24,12 @@ namespace GPMS.Controllers
             ViewBag.Assignments = _context.Assignments.Count();
             ViewBag.Employees = _context.Employees.Count();
 
-            ViewBag.Completed = _context.Tasks
-                .Where(t => t.TaskStatus == "Completed")
+            ViewBag.Completed = _context.Projects
+                .Where(p => p.ProjectStatus == "Completed")
                 .Count();
 
-            ViewBag.Ongoing = _context.Tasks
-                .Where(t => t.TaskStatus == "Ongoing")
+            ViewBag.Ongoing = _context.Projects
+                .Where(p => p.ProjectStatus == "Ongoing")
                 .Count();
 
             return View();

@@ -2,6 +2,7 @@
 using GPMS.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 
 namespace GPMS.Controllers
@@ -21,7 +22,6 @@ namespace GPMS.Controllers
         // ==============================
         public async Task<IActionResult> Index(int? projectId)
         {
-            // Send projects for dropdown
             ViewBag.Projects = await _context.Projects.ToListAsync();
 
             var modulesQuery = _context.Modules
@@ -29,15 +29,149 @@ namespace GPMS.Controllers
                 .Include(m => m.Project)
                 .AsQueryable();
 
-            // Filter by selected project
             if (projectId != null)
             {
                 modulesQuery = modulesQuery.Where(m => m.ProjectId == projectId);
             }
 
-            var modules = await modulesQuery.ToListAsync();
+            return View(await modulesQuery.ToListAsync());
+        }
 
-            return View(modules);
+        // ==============================
+        // MODULE DETAILS (NEW ✅)
+        // ==============================
+        public async Task<IActionResult> Details(int id)
+        {
+            var module = await _context.Modules
+                .Include(m => m.Project)
+                .Include(m => m.Tasks)
+                .FirstOrDefaultAsync(m => m.ModuleId == id);
+
+            if (module == null)
+            {
+                return NotFound();
+            }
+
+            return View(module);
+        }
+
+        // ==============================
+        // EDIT MODULE (GET)
+        // ==============================
+        public async Task<IActionResult> Edit(int id)
+        {
+            var module = await _context.Modules.FindAsync(id);
+
+            if (module == null)
+                return NotFound();
+
+            ViewBag.Projects = new SelectList(
+                _context.Projects,
+                "ProjectId",
+                "ProjectName",
+                module.ProjectId
+            );
+
+            return View(module);
+        }
+
+        // ==============================
+        // EDIT MODULE (POST)
+        // ==============================
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Edit(Module module)
+        {
+            if (!ModelState.IsValid)
+            {
+                ViewBag.Projects = new SelectList(
+                    _context.Projects,
+                    "ProjectId",
+                    "ProjectName",
+                    module.ProjectId
+                );
+
+                return View(module);
+            }
+
+            try
+            {
+                // 🔥 safer update
+                var existingModule = await _context.Modules.FindAsync(module.ModuleId);
+
+                if (existingModule == null)
+                    return NotFound();
+
+                existingModule.ModuleName = module.ModuleName;
+                existingModule.ProjectId = module.ProjectId;
+                existingModule.Details = module.Details;
+                existingModule.ModuleStatus = module.ModuleStatus;
+                existingModule.ModuleStartDate = module.ModuleStartDate;
+                existingModule.ModuleEndDate = module.ModuleEndDate;
+
+                await _context.SaveChangesAsync();
+            }
+            catch (Exception ex)
+            {
+                return Content("Error: " + ex.Message);
+            }
+
+            return RedirectToAction(nameof(Index));
+        }
+
+        // ==============================
+        // DELETE MODULE
+        // ==============================
+        [HttpPost]
+        public async Task<IActionResult> Delete(int id)
+        {
+            var module = await _context.Modules.FindAsync(id);
+
+            if (module != null)
+            {
+                _context.Modules.Remove(module);
+                await _context.SaveChangesAsync();
+            }
+
+            return RedirectToAction(nameof(Index));
+        }
+
+        // ======================
+        // GET: Module/Create
+        // ======================
+        public IActionResult Create()
+        {
+            ViewBag.ProjectList = new SelectList(
+                _context.Projects,
+                "ProjectId",
+                "ProjectName"
+            );
+
+            return View();
+        }
+
+        // ======================
+        // POST: Module/Create
+        // ======================
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Create(Module module)
+        {
+            if (ModelState.IsValid)
+            {
+                _context.Modules.Add(module);
+                await _context.SaveChangesAsync();
+                return RedirectToAction("Index");
+            }
+
+            ViewBag.ProjectList = new SelectList(
+                _context.Projects,
+                "ProjectId",
+                "ProjectName",
+                module.ProjectId
+            );
+
+            return View(module);
         }
     }
 }

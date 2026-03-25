@@ -1,71 +1,69 @@
-﻿@model Project
+﻿@model GPMS.Models.Project
+
 @{
     ViewData["Title"] = "Edit Project";
 }
 
-<link rel="stylesheet" href="~/css/project-edit.css" />
+<div class="page-container">
 
-<div class="edit-page">
+    <div class="form-card">
 
-    <div class="edit-card">
+        <h2 class="page-title">Edit Project</h2>
 
         <form asp-action="Edit" method="post">
 
+            @Html.AntiForgeryToken()
+
             <input type="hidden" asp-for="ProjectId" />
 
+            <!-- PROJECT NAME -->
             <div class="form-group">
-
                 <label>Project Name</label>
-
                 <input asp-for="ProjectName" class="form-control" />
-
+                <span asp-validation-for="ProjectName" class="text-danger"></span>
             </div>
 
+            <!-- DETAILS -->
             <div class="form-group">
-
                 <label>Details</label>
-
-                <textarea asp-for="ProjectDetails" class="form-control textarea"></textarea>
-
+                <textarea asp-for="ProjectDetails" class="form-control"></textarea>
+                <span asp-validation-for="ProjectDetails" class="text-danger"></span>
             </div>
 
+            <!-- STATUS + START DATE -->
             <div class="form-row">
 
                 <div class="form-group">
-
-                    <label>Status</label>
-
+                    <label>Project Status</label>
                     <select asp-for="ProjectStatus" class="form-control">
-
+                        <option value="">-- Select --</option>
                         <option>Ongoing</option>
                         <option>Completed</option>
-
                     </select>
-
+                    <span asp-validation-for="ProjectStatus" class="text-danger"></span>
                 </div>
 
                 <div class="form-group">
-
-                    <label>Start Date</label>
-
+                    <label>Project Start Date</label>
                     <input asp-for="ProjectStartDate"
                            type="date"
-                           class="form-control" />
-
+                           class="form-control" 
+                           readonly />
+                    <span asp-validation-for="ProjectStartDate" class="text-danger"></span>
                 </div>
 
             </div>
 
+            <!-- END DATE -->
             <div class="form-group">
-
-                <label>End Date</label>
-
+                <label>Project End Date</label>
                 <input asp-for="ProjectEndDate"
                        type="date"
                        class="form-control" />
-
+                <span asp-validation-for="ProjectEndDate" class="text-danger"></span>
             </div>
 
+            <!-- BUTTON -->
             <button type="submit" class="btn-save">
                 Save Changes
             </button>
@@ -75,3 +73,7 @@
     </div>
 
 </div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

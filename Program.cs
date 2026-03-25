@@ -4,6 +4,10 @@ using Microsoft.AspNetCore.Authentication.Cookies;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// ==============================
+// SERVICES
+// ==============================
+
 // Add MVC
 builder.Services.AddControllersWithViews();
 
@@ -11,19 +15,31 @@ builder.Services.AddControllersWithViews();
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
+// Authentication (Cookie)
 builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
     .AddCookie(options =>
     {
         options.LoginPath = "/Account/Login";
+
+        // 🔥 IMPORTANT (fix HTTPS cookie warning)
+        options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
+        options.Cookie.SameSite = SameSiteMode.Lax;
     });
 
-// Enable Session
+// Session
 builder.Services.AddSession(options =>
 {
     options.IdleTimeout = TimeSpan.FromHours(8);
     options.Cookie.HttpOnly = true;
     options.Cookie.IsEssential = true;
+
+    // 🔥 Secure session cookies
+    options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
 });
+
+// ==============================
+// APP PIPELINE
+// ==============================
 
 var app = builder.Build();
 
@@ -34,20 +50,22 @@ if (!app.Environment.IsDevelopment())
     app.UseHsts();
 }
 
+// 🔐 HTTPS
 app.UseHttpsRedirection();
 
-// Enable static files (css/js/images)
+// Static files (css/js/images)
 app.UseStaticFiles();
 
 app.UseRouting();
 
-// Enable session
+// Session
 app.UseSession();
 
+// Authentication & Authorization
 app.UseAuthentication();
 app.UseAuthorization();
 
-// MVC routing
+// Routing
 app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Account}/{action=Login}/{id?}");

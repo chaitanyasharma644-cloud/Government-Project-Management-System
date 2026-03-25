@@ -1,0 +1,66 @@
+﻿@model GPMS.Models.Role
+
+<link rel="stylesheet" href="~/css/site.css" />
+
+<div class="page-container">
+
+    <!-- HEADER -->
+    <div class="page-header">
+        <h2 class="page-title">Role Details</h2>
+        <a href="/Role/Index" class="btn">Back</a>
+    </div>
+
+    <!-- CARD -->
+    <div class="card role">
+
+        <!-- ROLE NAME -->
+        <div class="card-top">
+            <h3>@Model.RoleName</h3>
+        </div>
+
+        <!-- DESCRIPTION -->
+        <p>
+            @(string.IsNullOrEmpty(Model.RoleDescription)
+                ? "No description provided"
+                : Model.RoleDescription)
+        </p>
+
+        <!-- META -->
+        <div class="card-meta">
+            <span>🔐 @Model.RolePermissions.Count() permissions</span>
+        </div>
+
+        <hr />
+
+        <!-- PERMISSIONS -->
+        <div>
+            <h4>Permissions</h4>
+
+            @if (Model.RolePermissions != null && Model.RolePermissions.Any())
+            {
+                <div class="permission-badges">
+                    @foreach (var rp in Model.RolePermissions)
+                    {
+                        <span class="badge">
+                            @(rp.Permission?.PermsName ?? "No Name")
+                        </span>
+                    }
+                </div>
+            }
+            else
+            {
+                <p class="no-data">No permissions assigned.</p>
+            }
+        </div>
+
+        <hr />
+
+        <!-- ACTIONS -->
+        <div class="card-actions">
+            <a href="/Role/Edit/@Model.RoleId" class="btn">Edit</a>
+            <a href="/Role/Index" class="btn">Back</a>
+        </div>
+
+    </div>
+
+</div>

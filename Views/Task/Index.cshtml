@@ -1,0 +1,131 @@
+﻿@model IEnumerable<GPMS.Models.Task>
+
+<link rel="stylesheet" href="~/css/project.css" />
+
+<div class="page-container">
+
+    <!-- HEADER -->
+    <div class="page-header">
+        <h2 class="page-title">TASKS</h2>
+        <a asp-action="Create" class="btn">+ New Task</a>
+    </div>
+
+    <!-- FILTER BAR -->
+    <form method="get" class="search-bar">
+
+        <!-- Project -->
+        <select name="projectId" class="form-control">
+            <option value="">All Projects</option>
+            @foreach (var p in ViewBag.Projects)
+            {
+                if (Context.Request.Query["projectId"] == p.Value)
+                {
+                    <option value="@p.Value" selected>@p.Text</option>
+                }
+                else
+                {
+                    <option value="@p.Value">@p.Text</option>
+                }
+            }
+        </select>
+
+        <!-- Module -->
+        <select name="moduleId" class="form-control">
+            <option value="">All Modules</option>
+            @foreach (var m in ViewBag.Modules)
+            {
+                if (Context.Request.Query["moduleId"] == m.Value)
+                {
+                    <option value="@m.Value" selected>@m.Text</option>
+                }
+                else
+                {
+                    <option value="@m.Value">@m.Text</option>
+                }
+            }
+        </select>
+
+        <!-- Search -->
+        <input type="text"
+               name="search"
+               class="form-control"
+               value="@Context.Request.Query["search"]"
+               placeholder="Search task..." />
+
+        <button type="submit" class="btn btn-primary-custom">Search</button>
+    </form>
+
+    <!-- TABLE -->
+    <div class="card">
+
+        <table class="task-table">
+            <thead>
+                <tr>
+                    <th>Task Name</th>
+                    <th>Description</th>
+                    <th>Status</th>
+                    <th>Start Date</th>
+                    <th>End Date</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                @if (!Model.Any())
+                {
+                    <tr>
+                        <td colspan="6" class="no-data">No tasks found</td>
+                    </tr>
+                }
+                else
+                {
+                    @foreach (var item in Model)
+                    {
+                        var statusClass = string.IsNullOrEmpty(item.TaskStatus)
+                            ? ""
+                            : item.TaskStatus.ToLower();
+
+                        <tr>
+                            <td>@item.TaskName</td>
+                            <td>@item.TaskDescription</td>
+
+                            <!-- STATUS -->
+                            <td>
+                                <span class="status @statusClass">
+                                    @(item.TaskStatus ?? "N/A")
+                                </span>
+                            </td>
+
+                            <!-- START DATE -->
+                            <td>
+                                @(item.TaskStartDate?.ToString("dd MMM yyyy") ?? "-")
+                            </td>
+
+                            <!-- END DATE -->
+                            <td>
+                                @(item.TaskEndDate?.ToString("dd MMM yyyy") ?? "-")
+                            </td>
+
+                            <!-- ACTIONS -->
+                            <td>
+                                <div class="card-actions">
+                                    <a asp-action="Details" asp-route-id="@item.TaskId" class="btn">View</a>
+                                    <a asp-action="Edit" asp-route-id="@item.TaskId" class="btn">Edit</a>
+
+                                    <form asp-action="Delete"
+                                          asp-route-id="@item.TaskId"
+                                          method="post"
+                                          style="display:inline;">
+                                        <button type="submit" class="btn btn-delete">Delete</button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                }
+            </tbody>
+        </table>
+
+    </div>
+
+</div>

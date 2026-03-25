@@ -1,60 +1,79 @@
-﻿@model Project
+﻿@model GPMS.Models.Project
 
-<link rel="stylesheet" href="~/css/project-details.css" />
+@{
+    ViewData["Title"] = "Project Details";
+}
 
-<div class="project-details-page">
+<div class="page-container">
 
-    <div class="project-header">
-
+    <!-- HEADER -->
+    <div class="page-header">
         <h2>@Model.ProjectName</h2>
 
-        <span class="status-badge @(Model.ProjectStatus == "Completed" ? "completed" : "ongoing")">
-            @Model.ProjectStatus
+        <span class="status @(Model.ProjectStatus == "Completed" ? "completed" : "ongoing")">
+            @(Model.ProjectStatus ?? "—")
         </span>
-
     </div>
 
-    <div class="project-info">
+    <!-- PROJECT INFO -->
+    <p>@Model.ProjectDetails</p>
 
-        <p>@Model.ProjectDetails</p>
-
-        <div class="project-meta">
-            <span>📅 Start: @Model.ProjectStartDate.ToString("MMM dd, yyyy")</span>
-        </div>
-
+    <div class="card-meta">
+        <span>📅 Start: @Model.ProjectStartDate.ToString("MMM dd, yyyy")</span>
+        <span>🏁 End: @(Model.ProjectEndDate?.ToString("MMM dd, yyyy") ?? "N/A")</span>
     </div>
 
     <hr />
 
-    <div class="modules-header">
-
+    <!-- MODULE HEADER -->
+    <div class="page-header">
         <h3>Modules</h3>
 
-        <a href="/Module/Create?projectId=@Model.ProjectId"
-           class="add-module-btn">
+        <a href="/Module/Create?projectId=@Model.ProjectId" class="btn">
             + Add Module
         </a>
-
     </div>
 
-    <div class="modules-grid">
+    <!-- MODULE GRID -->
+    <div class="cards-grid">
 
         @foreach (var m in Model.Modules)
         {
-            <div class="module-card">
+            <div class="card module">
 
-                <h4>@m.ModuleName</h4>
+                <!-- TOP -->
+                <div class="card-top">
+                    <h4>@m.ModuleName</h4>
 
-                <p>Status: @m.ModuleStatus</p>
+                    <span class="status @(m.ModuleStatus == "Completed" ? "completed" : "ongoing")">
+                        @(m.ModuleStatus ?? "—")
+                    </span>
+                </div>
 
-                <div class="module-actions">
+                <!-- META -->
+                <div class="card-meta">
+                    <span>📅 @m.ModuleStartDate?.ToString("MMM dd, yyyy")</span>
+                    <span>🏁 @(m.ModuleEndDate?.ToString("MMM dd, yyyy") ?? "N/A")</span>
+                    <span>🎯 @m.Tasks.Count tasks</span>
+                </div>
 
-                    <a href="/Module/Details/@m.ModuleId" class="view-btn">View</a>
+                <hr />
 
-                    <a href="/Module/Edit/@m.ModuleId" class="edit-btn">Edit</a>
+                <!-- ACTIONS -->
+                <div>
+                    <a href="/Module/Details/@m.ModuleId" class="btn">View</a>
+                    <a href="/Module/Edit/@m.ModuleId" class="btn">Edit</a>
 
-                    <a href="/Module/Delete/@m.ModuleId" class="delete-btn">Delete</a>
+                    <form method="post"
+                          action="/Module/Delete/@m.ModuleId"
+                          style="display:inline;"
+                          onsubmit="return confirm('Delete module?')">
 
+                        @Html.AntiForgeryToken()
+
+                        <button type="submit" class="btn btn-delete">Delete</button>
+
+                    </form>
                 </div>
 
             </div>
