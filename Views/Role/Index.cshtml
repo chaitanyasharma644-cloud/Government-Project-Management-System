@@ -1,0 +1,107 @@
+﻿@model IEnumerable<GPMS.Models.Role>
+
+@{
+    ViewData["Title"] = "Roles";
+}
+
+<link rel="stylesheet" href="~/css/site.css" />
+
+<div class="page-container">
+
+    <!-- HEADER -->
+    <div class="page-header">
+        <h2 class="page-title">ROLES</h2>
+
+        <a asp-action="Create" class="btn">
+            + New Role
+        </a>
+    </div>
+
+    <!-- SEARCH -->
+    <form method="get" class="search-bar">
+
+        <input type="text"
+               name="search"
+               class="form-control"
+               placeholder="Search roles..."
+               value="@Context.Request.Query["search"]" />
+
+        <button type="submit" class="btn btn-primary-custom">
+            Search
+        </button>
+
+    </form>
+
+    <!-- GRID -->
+    @if (Model != null && Model.Any())
+    {
+        <div class="cards-grid">
+
+            @foreach (var role in Model)
+            {
+                <div class="card role">
+
+                    <!-- TOP -->
+                    <div class="card-top">
+                        <h4>@role.RoleName</h4>
+                    </div>
+
+                    <!-- DESCRIPTION -->
+                    <p>
+                        @(string.IsNullOrEmpty(role.RoleDescription)
+                            ? "No description available"
+                            : role.RoleDescription)
+                    </p>
+
+                    <!-- META -->
+                    <div class="card-meta">
+                        <span>🔐 @role.RolePermissions.Count() permissions</span>
+                    </div>
+
+                    <hr />
+
+                    <!-- ACTIONS -->
+                    <div class="card-actions">
+
+                        <a asp-action="Details"
+                               asp-route-id="@role.RoleId"
+                               class="btn">
+                            View
+                        </a>
+
+                        <a asp-action="Edit"
+                               asp-route-id="@role.RoleId"
+                               class="btn">
+                            Edit
+                        </a>
+
+                        <form asp-action="Delete"
+                              asp-route-id="@role.RoleId"
+                              method="post">
+
+                            @Html.AntiForgeryToken()
+
+                            <button type="submit"
+                                    class="btn btn-delete"
+                                    onclick="return confirm('Delete this role?')">
+                                Delete
+                            </button>
+
+                        </form>
+
+                    </div>
+
+                </div>
+            }
+
+        </div>
+    }
+    else
+    {
+        <!-- EMPTY STATE -->
+        <div class="no-data">
+            <p>No roles found.</p>
+        </div>
+    }
+
+</div>

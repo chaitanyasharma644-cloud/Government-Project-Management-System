@@ -1,19 +1,26 @@
-﻿body {
+﻿/* =========================
+   GLOBAL
+========================= */
+
+body {
     margin: 0;
-    font-family: Segoe UI;
-    background: #f4f7fb;
+    font-family: "Segoe UI", sans-serif;
+    background: linear-gradient(to right, #f8fafc, #eef2ff);
     color: #1e293b;
 }
 
-/* NAVBAR */
+/* =========================
+   NAVBAR
+========================= */
 
 .navbar {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 8px 30px; /* smaller navbar */
-    background: white;
-    border-bottom: 1px solid #e5e7eb;
+    padding: 10px 30px;
+    background: rgba(255, 255, 255, 0.8);
+    backdrop-filter: blur(8px);
+    border-bottom: 1px solid rgba(0,0,0,0.05);
 }
 
 .logo {
@@ -21,7 +28,9 @@
     font-weight: 700;
 }
 
-/* NAV MENU */
+/* =========================
+   NAV MENU
+========================= */
 
 .menu a {
     margin: 0 10px;
@@ -30,13 +39,16 @@
     font-weight: 600;
     padding: 6px 10px;
     border-radius: 6px;
+    transition: all 0.2s ease;
 }
 
     .menu a:hover {
-        box-shadow: 0 0 6px rgba(0,0,0,0.15);
+        background: #eef2ff;
     }
 
-/* USER SECTION */
+/* =========================
+   USER SECTION
+========================= */
 
 .user-section {
     display: flex;
@@ -65,7 +77,9 @@
     color: #64748b;
 }
 
-/* LOGOUT */
+/* =========================
+   LOGOUT BUTTON
+========================= */
 
 .logout-btn {
     padding: 8px 14px;
@@ -74,7 +88,7 @@
     background: white;
     color: #dc2626;
     text-decoration: none;
-    transition: 0.3s;
+    transition: all 0.2s ease;
 }
 
     .logout-btn:hover {
@@ -82,111 +96,143 @@
         color: white;
     }
 
-/* DASHBOARD */
+/* =========================
+   DASHBOARD
+========================= */
 
 .dashboard-container {
-    padding: 30px;
+    padding: 30px 40px;
 }
+
+/* =========================
+   STATS GRID
+========================= */
 
 .stats-grid {
     display: grid;
-    grid-template-columns: repeat(8,1fr);
-    gap: 15px;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 22px;
+    margin-bottom: 40px;
 }
+
+/* =========================
+   STAT CARDS
+========================= */
 
 .stat-card {
-    background: white;
-    border-radius: 12px;
-    padding: 18px;
+    background: rgba(255, 255, 255, 0.75);
+    backdrop-filter: blur(10px);
+    border-radius: 16px;
+    padding: 30px 20px;
     text-align: center;
-    border: 1px solid #e5e7eb;
-    box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+    border: 1px solid rgba(255,255,255,0.4);
+    box-shadow: 0 6px 18px rgba(0,0,0,0.08);
     font-weight: 600;
+    min-height: 170px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    transition: all 0.25s ease;
+    animation: fadeUp 0.5s ease;
 }
 
-    /* COLORED TOP BORDERS */
+    /* TOP COLORS */
 
-    .stat-card:nth-child(1) {
-        border-top: 4px solid #f59e0b;
+    .stat-card.project {
+        border-top: 5px solid #f59e0b;
     }
 
-    .stat-card:nth-child(2) {
-        border-top: 4px solid #3b82f6;
+    .stat-card.employees {
+        border-top: 5px solid #3b82f6;
     }
 
-    .stat-card:nth-child(3) {
-        border-top: 4px solid #8b5cf6;
+    .stat-card.ongoing {
+        border-top: 5px solid #ef4444;
     }
 
-    .stat-card:nth-child(4) {
-        border-top: 4px solid #10b981;
+    .stat-card.modules {
+        border-top: 5px solid #10b981;
     }
 
-    .stat-card:nth-child(5) {
-        border-top: 4px solid #ef4444;
-    }
-
-    .stat-card:nth-child(6) {
-        border-top: 4px solid #ec4899;
-    }
-
-    .stat-card:nth-child(7) {
-        border-top: 4px solid #6366f1;
-    }
-
-    .stat-card:nth-child(8) {
-        border-top: 4px solid #94a3b8;
-    }
+    /* HOVER EFFECT */
 
     .stat-card:hover {
-        transform: translateY(-3px);
-        transition: 0.2s;
-        box-shadow: 0 6px 16px rgba(0,0,0,0.1);
+        transform: translateY(-6px);
     }
-/* ICONS */
+
+    /* COLORED GLOW */
+
+    .stat-card.project:hover {
+        box-shadow: 0 12px 25px rgba(245, 158, 11, 0.3);
+    }
+
+    .stat-card.employees:hover {
+        box-shadow: 0 12px 25px rgba(59, 130, 246, 0.3);
+    }
+
+    .stat-card.ongoing:hover {
+        box-shadow: 0 12px 25px rgba(239, 68, 68, 0.3);
+    }
+
+    .stat-card.modules:hover {
+        box-shadow: 0 12px 25px rgba(16, 185, 129, 0.3);
+    }
+
+/* =========================
+   ICON / TEXT
+========================= */
 
 .icon {
-    font-size: 26px;
-    filter: brightness(1.3); /* brighter icons */
+    font-size: 32px;
+    margin-bottom: 10px;
 }
 
-/* NUMBERS */
-
 .number {
-    font-size: 22px;
+    font-size: 32px;
     font-weight: 700;
-    margin-top: 5px;
 }
 
 .label {
-    font-size: 12px;
+    font-size: 13px;
     color: #64748b;
-    font-weight: 600;
+    margin-top: 5px;
 }
 
-/* PANELS */
+/* =========================
+   PANEL
+========================= */
 
 .panel {
-    margin-top: 25px;
-    background: white;
-    padding: 20px;
-    border-radius: 12px;
-    border: 1px solid #e5e7eb;
+    margin-top: 30px;
+    background: rgba(255, 255, 255, 0.8);
+    backdrop-filter: blur(8px);
+    padding: 25px;
+    border-radius: 16px;
+    border: 1px solid rgba(255,255,255,0.4);
 }
 
-/* QUICK ACTION BUTTONS */
+/* =========================
+   ACTION BUTTONS
+========================= */
 
-.actions button {
-    margin: 8px;
-    padding: 10px 16px;
-    border-radius: 8px;
-    border: none;
-    cursor: pointer;
-    font-weight: 600;
-    color: white;
+.actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-top: 15px;
 }
 
-    /* COLORFUL BUTTONS */
+    .actions button {
+        border: none;
+        border-radius: 10px;
+        padding: 10px 18px;
+        font-weight: 600;
+        cursor: pointer;
+        color: white;
+        transition: all 0.2s ease;
+    }
+
+/* BUTTON COLORS */
 
 .qa-project {
     background: #6366f1;
@@ -216,6 +262,29 @@
     background: #ef4444;
 }
 
+.qa-permission {
+    background: #6366f1;
+}
+
+/* BUTTON HOVER */
+
 .actions button:hover {
-    opacity: 0.9;
+    transform: translateY(-2px);
+    filter: brightness(1.1);
+}
+
+/* =========================
+   ANIMATION
+========================= */
+
+@keyframes fadeUp {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }

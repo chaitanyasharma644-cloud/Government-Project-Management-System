@@ -1,0 +1,102 @@
+﻿@model GPMS.Models.Module
+
+@{
+    ViewData["Title"] = "Edit Module";
+}
+
+<link rel="stylesheet" href="~/css/site.css" />
+
+<div class="page-container">
+
+    <div class="form-card">
+
+        <h2 class="page-title">Edit Module</h2>
+
+        <form asp-action="Edit" method="post">
+
+            @Html.AntiForgeryToken()
+
+            <!-- Hidden ID -->
+            <input type="hidden" asp-for="ModuleId" />
+
+            <!-- Validation Summary -->
+            <div asp-validation-summary="All" class="text-danger"></div>
+
+            <!-- MODULE NAME -->
+            <div class="form-group">
+                <label asp-for="ModuleName"></label>
+                <input asp-for="ModuleName" class="form-control" placeholder="Enter module name..." />
+                <span asp-validation-for="ModuleName" class="text-danger"></span>
+            </div>
+
+            <!-- PROJECT -->
+            <div class="form-group">
+                <label asp-for="ProjectId"></label>
+
+                <select asp-for="ProjectId"
+                        asp-items="ViewBag.Projects"
+                        class="form-control"
+                        readonly >
+                </select>
+
+                <span asp-validation-for="ProjectId" class="text-danger"></span>
+            </div>
+
+            <!-- DETAILS -->
+            <div class="form-group">
+                <label asp-for="Details"></label>
+                <textarea asp-for="Details"
+                          class="form-control"
+                          placeholder="Enter module details..."></textarea>
+                <span asp-validation-for="Details" class="text-danger"></span>
+            </div>
+
+            <!-- ROW (STATUS + START DATE) -->
+            <div class="form-row">
+
+                <div class="form-group half">
+                    <label asp-for="ModuleStatus"></label>
+                    <select asp-for="ModuleStatus" class="form-control">
+                        <option value="">-- Select --</option>
+                        <option>Ongoing</option>
+                        <option>Completed</option>
+                    </select>
+                    <span asp-validation-for="ModuleStatus" class="text-danger"></span>
+                </div>
+
+                <div class="form-group half">
+                    <label asp-for="ModuleStartDate"></label>
+                    <input asp-for="ModuleStartDate"
+                           type="date"
+                           class="form-control readonly-field"
+                           readonly />
+                    <span asp-validation-for="ModuleStartDate" class="text-danger"></span>
+                </div>
+
+            </div>
+
+            <!-- END DATE -->
+            <div class="form-group">
+                <label asp-for="ModuleEndDate"></label>
+                <input asp-for="ModuleEndDate"
+                       type="date"
+                       class="form-control" />
+                <span asp-validation-for="ModuleEndDate" class="text-danger"></span>
+            </div>
+
+            <!-- BUTTON -->
+            <div class="form-actions">
+                <button type="submit" class="btn-save">
+                    Save Changes
+                </button>
+            </div>
+
+        </form>
+
+    </div>
+
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

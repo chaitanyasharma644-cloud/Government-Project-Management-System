@@ -61,9 +61,7 @@ wwwroot\lib\jquery\dist\jquery.slim.js
 wwwroot\lib\jquery\dist\jquery.slim.min.js
 wwwroot\lib\jquery\dist\jquery.slim.min.map
 wwwroot\lib\jquery\LICENSE.txt
-wwwroot\css\project.css
 wwwroot\css\dashboard.css
-wwwroot\css\modules.css
 D:\rubucode\nic project\GPMS\wwwroot\css\site.css
 D:\rubucode\nic project\GPMS\wwwroot\favicon.ico
 D:\rubucode\nic project\GPMS\wwwroot\js\site.js
@@ -127,5 +125,3 @@ D:\rubucode\nic project\GPMS\wwwroot\lib\jquery\dist\jquery.slim.min.js
 D:\rubucode\nic project\GPMS\wwwroot\lib\jquery\dist\jquery.slim.min.map
 D:\rubucode\nic project\GPMS\wwwroot\lib\jquery\LICENSE.txt
 D:\rubucode\nic project\GPMS\wwwroot\css\dashboard.css
-D:\rubucode\nic project\GPMS\wwwroot\css\project.css
-D:\rubucode\nic project\GPMS\wwwroot\css\modules.css

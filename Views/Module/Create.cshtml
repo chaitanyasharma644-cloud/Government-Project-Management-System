@@ -1,0 +1,139 @@
+﻿@model GPMS.Models.Task
+
+@{
+    ViewData["Title"] = "Create Task";
+}
+
+<div class="page-container">
+
+    <div class="form-card">
+
+        <h2 class="page-title">Create Task</h2>
+
+        <form asp-action="Create" method="post">
+
+            @Html.AntiForgeryToken()
+
+            <!-- SELECT PROJECT -->
+            <div class="form-group">
+                <label>Select Project</label>
+                <select id="projectDropdown"
+                        asp-for="ProjectId"
+                        asp-items="ViewBag.ProjectList"
+                        class="form-control">
+                    <option value="">-- Select Project --</option>
+                </select>
+                <span asp-validation-for="ProjectId" class="text-danger"></span>
+            </div>
+
+            <!-- SELECT MODULE -->
+            <div class="form-group">
+                <label>Select Module</label>
+                <select id="ModuleId"
+                        asp-for="ModuleId"
+                        class="form-control">
+                    <option value="">-- Select Module --</option>
+                </select>
+                <span asp-validation-for="ModuleId" class="text-danger"></span>
+            </div>
+
+            <!-- TASK NAME -->
+            <div class="form-group">
+                <label>Task Name</label>
+                <input asp-for="TaskName"
+                       class="form-control"
+                       placeholder="Enter task name..." />
+                <span asp-validation-for="TaskName" class="text-danger"></span>
+            </div>
+
+            <!-- DESCRIPTION -->
+            <div class="form-group">
+                <label>Description</label>
+                <textarea asp-for="TaskDescription"
+                          class="form-control"
+                          placeholder="Enter task details..."></textarea>
+                <span asp-validation-for="TaskDescription" class="text-danger"></span>
+            </div>
+
+            <!-- STATUS -->
+            <div class="form-group">
+                <label>Status</label>
+                <select asp-for="TaskStatus" class="form-control">
+                    <option value="">-- Select --</option>
+                    <option>Ongoing</option>
+                    <option>Completed</option>
+                </select>
+                <span asp-validation-for="TaskStatus" class="text-danger"></span>
+            </div>
+
+            <!-- DATES -->
+            <div class="form-row">
+
+                <div class="form-group">
+                    <label>Start Date</label>
+                    <input asp-for="TaskStartDate"
+                           type="date"
+                           class="form-control" />
+                    <span asp-validation-for="TaskStartDate" class="text-danger"></span>
+                </div>
+
+                <div class="form-group">
+                    <label>End Date</label>
+                    <input asp-for="TaskEndDate"
+                           type="date"
+                           class="form-control" />
+                    <span asp-validation-for="TaskEndDate" class="text-danger"></span>
+                </div>
+
+            </div>
+
+            <!-- BUTTON -->
+            <button type="submit" class="btn-save">
+                Create Task
+            </button>
+
+        </form>
+
+    </div>
+
+</div>
+
+@section Scripts {
+
+    <partial name="_ValidationScriptsPartial" />
+
+    <script>
+        document.getElementById("projectDropdown").addEventListener("change", function () {
+
+            var projectId = this.value;
+            let moduleDropdown = document.getElementById("ModuleId");
+
+            moduleDropdown.innerHTML = '<option value="">-- Select Module --</option>';
+
+            if (projectId === "") {
+                moduleDropdown.disabled = true;
+                return;
+            }
+
+            moduleDropdown.disabled = false;
+
+            fetch('/Task/GetModulesByProject?projectId=' + projectId)
+                .then(response => response.json())
+                .then(data => {
+
+                    data.forEach(m => {
+                        let option = document.createElement("option");
+
+                        option.value = m.moduleId || m.ModuleId;
+                        option.text = m.moduleName || m.ModuleName;
+
+                        moduleDropdown.appendChild(option);
+                    });
+
+                    if (data.length > 0) {
+                        moduleDropdown.value = data[0].moduleId || data[0].ModuleId;
+                    }
+                });
+        });
+    </script>
+}

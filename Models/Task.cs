@@ -13,9 +13,23 @@ public partial class Task
     [Column("task_id")]
     public int TaskId { get; set; }
 
+    // ==============================
+    // FOREIGN KEY (REQUIRED)
+    // ==============================
+    [Required]
     [Column("module_id")]
     public int ModuleId { get; set; }
 
+    // ==============================
+    // NOT MAPPED (FOR UI ONLY ✅)
+    // ==============================
+    [NotMapped]
+    public int? ProjectId { get; set; }
+
+    // ==============================
+    // TASK DETAILS
+    // ==============================
+    [Required]
     [Column("task_name")]
     [StringLength(100)]
     [Unicode(false)]
@@ -37,10 +51,14 @@ public partial class Task
     [Column("task_end_date")]
     public DateOnly? TaskEndDate { get; set; }
 
+    // ==============================
+    // NAVIGATION PROPERTIES
+    // ==============================
     [InverseProperty("Task")]
     public virtual ICollection<Assignment> Assignments { get; set; } = new List<Assignment>();
 
     [ForeignKey("ModuleId")]
     [InverseProperty("Tasks")]
-    public virtual Module Module { get; set; } = null!;
+    // ✅ ADD THE '?' AND REMOVE '= null!'
+    public virtual Module? Module { get; set; }
 }
