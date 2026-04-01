@@ -142,11 +142,13 @@ namespace GPMS.Controllers
         {
             var task = await _context.Tasks
                 .Include(t => t.Module)
+                .ThenInclude(m => m.Project) // 🔥 IMPORTANT FIX
                 .FirstOrDefaultAsync(t => t.TaskId == id);
 
             if (task == null)
                 return NotFound();
 
+            // For UI (readonly display)
             task.ProjectId = task.Module?.ProjectId;
 
             ViewBag.ProjectList = new SelectList(_context.Projects, "ProjectId", "ProjectName", task.ProjectId);
@@ -175,12 +177,15 @@ namespace GPMS.Controllers
             if (existingTask == null)
                 return NotFound();
 
-            existingTask.ModuleId = task.ModuleId;
+            // ✅ UPDATE ONLY ALLOWED FIELDS
             existingTask.TaskName = task.TaskName;
             existingTask.TaskDescription = task.TaskDescription;
             existingTask.TaskStatus = task.TaskStatus;
-            existingTask.TaskStartDate = task.TaskStartDate;
             existingTask.TaskEndDate = task.TaskEndDate;
+
+            // ❌ DO NOT UPDATE THESE (readonly in UI)
+            // existingTask.ModuleId = task.ModuleId;
+            // existingTask.TaskStartDate = task.TaskStartDate;
 
             await _context.SaveChangesAsync();
 

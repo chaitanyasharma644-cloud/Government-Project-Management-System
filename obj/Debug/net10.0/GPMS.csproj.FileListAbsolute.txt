@@ -224,4 +224,4 @@ D:\rubucode\nic project\GPMS\obj\Debug\net10.0\GPMS.genruntimeconfig.cache
 D:\rubucode\nic project\GPMS\obj\Debug\net10.0\ref\GPMS.dll
 D:\rubucode\nic project\GPMS\obj\Debug\net10.0\GPMS.sourcelink.json
 D:\rubucode\nic project\GPMS\obj\Debug\net10.0\compressed\ccf82sms9t-{0}-688s47diwl-688s47diwl.gz
-D:\rubucode\nic project\GPMS\obj\Debug\net10.0\compressed\6g32gkfj5i-{0}-wuo6x098a9-wuo6x098a9.gz
+D:\rubucode\nic project\GPMS\obj\Debug\net10.0\compressed\6g32gkfj5i-{0}-78lmthg5wx-78lmthg5wx.gz

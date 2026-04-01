@@ -447,3 +447,23 @@ textarea[readonly] {
         gap: 10px;
     }
 }
+
+/* DETAILS PAGE IMPROVEMENTS */
+
+.text-muted {
+    font-size: 13px;
+    color: #64748b;
+}
+
+.form-group p {
+    margin: 0;
+    padding: 8px 10px;
+    background: #f8fafc;
+    border-radius: 6px;
+    border: 1px solid #e5e7eb;
+    font-size: 14px;
+}
+
+.page-header .status {
+    align-self: flex-start;
+}

@@ -1,0 +1,106 @@
+﻿@model GPMS.Models.Task
+<link rel="stylesheet" href="~/css/project.css" />
+
+<div class="page-container">
+
+    <div class="form-card">
+
+        <!-- HEADER -->
+        <div class="page-header">
+            <div>
+                <h2 class="page-title">Edit Task</h2>
+                <p class="text-muted">
+                    @Model.Module?.ModuleName • @Model.Module?.Project?.ProjectName
+                </p>
+            </div>
+
+            <span class="status @(Model.TaskStatus?.ToLower())">
+                @Model.TaskStatus
+            </span>
+        </div>
+
+        <form asp-action="Edit" method="post">
+
+            @Html.AntiForgeryToken()
+
+            <!-- 🔥 REQUIRED HIDDEN FIELDS -->
+            <input type="hidden" asp-for="TaskId" />
+            <input type="hidden" asp-for="ModuleId" />
+
+            <!-- TASK NAME -->
+            <div class="form-group">
+                <label>Task Name</label>
+                <input asp-for="TaskName" class="form-control" />
+            </div>
+
+            <!-- DESCRIPTION -->
+            <div class="form-group">
+                <label>Description</label>
+                <textarea asp-for="TaskDescription" class="form-control"></textarea>
+            </div>
+
+            <!-- STATUS -->
+            <div class="form-group">
+                <label>Status</label>
+                <select asp-for="TaskStatus" class="form-control">
+                    <option>Ongoing</option>
+                    <option>Completed</option>
+                </select>
+            </div>
+
+            <!-- PROJECT + MODULE (READ ONLY) -->
+            <div class="form-row">
+
+                <div class="form-group">
+                    <label>Project</label>
+                    <input class="form-control"
+                           value="@Model.Module?.Project?.ProjectName"
+                           readonly />
+                </div>
+
+                <div class="form-group">
+                    <label>Module</label>
+                    <input class="form-control"
+                           value="@Model.Module?.ModuleName"
+                           readonly />
+                </div>
+
+            </div>
+
+            <!-- DATES -->
+            <div class="form-row">
+
+                <div class="form-group">
+                    <label>Start Date</label>
+                    <input class="form-control"
+                           value="@Model.TaskStartDate?.ToString("yyyy-MM-dd")"
+                           readonly />
+                </div>
+
+                <div class="form-group">
+                    <label>End Date</label>
+                    <input asp-for="TaskEndDate"
+                           type="date"
+                           class="form-control" />
+                </div>
+
+            </div>
+
+            <!-- ACTIONS -->
+            <div style="display:flex; justify-content:space-between; margin-top:20px;">
+
+                <a asp-action="Index" class="btn">
+                    ← Back
+                </a>
+
+                <button type="submit" class="btn-save">
+                    Update Task
+                </button>
+
+            </div>
+
+        </form>
+
+    </div>
+
+</div>

@@ -1,102 +1,125 @@
 ﻿@model GPMS.Models.Module
+@using System.Linq
 
-@{
-    ViewData["Title"] = "Module Details";
-}
+<link rel="stylesheet" href="~/css/site.css" />
 
 <div class="page-container">
 
-    <!-- HEADER -->
+    <!-- MODULE HEADER -->
     <div class="page-header">
+        <div>
+            <h2 class="page-title">@Model.ModuleName</h2>
+            <p class="text-muted">@Model.Details</p>
+        </div>
 
-        <h2>@Model.ModuleName</h2>
-
-        <span class="status @(Model.ModuleStatus == "Completed" ? "completed" : "ongoing")">
-            @(Model.ModuleStatus ?? "—")
-        </span>
-
+        <a asp-controller="Task"
+               asp-action="Create"
+               asp-route-moduleId="@Model.ModuleId"
+               class="btn btn-primary-custom">
+            + Add Task
+        </a>
     </div>
 
     <!-- MODULE INFO -->
-    <p><strong>Project:</strong> @Model.Project?.ProjectName</p>
-
-    <p>@Model.Details</p>
-
-    <div class="card-meta">
-        <span>📅 Start: @Model.ModuleStartDate?.ToString("MMM dd, yyyy")</span>
-        <span>🏁 @(Model.ModuleEndDate?.ToString("MMM dd, yyyy") ?? "N/A")</span>
+    <div class="card" style="margin-bottom:20px;">
+        <p><strong>Project:</strong> @Model.Project?.ProjectName</p>
+        <p><strong>Start Date:</strong> @Model.ModuleStartDate?.ToString("dd MMM yyyy")</p>
+        <p><strong>End Date:</strong> @Model.ModuleEndDate?.ToString("dd MMM yyyy")</p>
     </div>
 
-    <hr />
+    <!-- TASK TABLE -->
+    <div class="card">
 
-    <!-- TASK HEADER -->
-    <div class="page-header">
+        <table class="task-table">
+            <thead>
+                <tr>
+                    <th>Task Name</th>
+                    <th>Description</th>
+                    <th>Status</th>
+                    <th>Start Date</th>
+                    <th>End Date</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
 
-        <h3>Tasks</h3>
+            <tbody>
+                @if (Model.Tasks == null || !Model.Tasks.Any())
+                {
+                    <tr>
+                        <td colspan="6" class="no-data">
+                            No tasks found for this module
+                        </td>
+                    </tr>
+                }
+                else
+                {
+                    @foreach (var item in Model.Tasks)
+                    {
+                        var statusClass = string.IsNullOrEmpty(item.TaskStatus)
+                            ? ""
+                            : item.TaskStatus.ToLower();
 
-        <a href="/Task/Create?moduleId=@Model.ModuleId" class="btn">
-            + Add Task
-        </a>
+                        <tr>
+                            <td>@item.TaskName</td>
 
-    </div>
+                            <td>
+                                @(string.IsNullOrEmpty(item.TaskDescription)
+                                    ? "-"
+                                    : item.TaskDescription)
+                            </td>
 
-    <!-- TASK GRID -->
-    <div class="cards-grid">
+                            <!-- STATUS -->
+                            <td>
+                                <span class="status @statusClass">
+                                    @(item.TaskStatus ?? "N/A")
+                                </span>
+                            </td>
 
-        @if (Model.Tasks != null && Model.Tasks.Any())
-        {
-            foreach (var t in Model.Tasks)
-            {
-                <div class="card">
+                            <!-- START DATE -->
+                            <td>
+                                @(item.TaskStartDate?.ToString("dd MMM yyyy") ?? "-")
+                            </td>
 
-                    <!-- TOP -->
-                    <div class="card-top">
+                            <!-- END DATE -->
+                            <td>
+                                @(item.TaskEndDate?.ToString("dd MMM yyyy") ?? "-")
+                            </td>
 
-                        <h4>@t.TaskName</h4>
+                            <!-- ACTIONS -->
+                            <td>
+                                <div class="card-actions">
 
-                        <span class="status @(t.TaskStatus == "Completed" ? "completed" : "ongoing")">
-                            @(t.TaskStatus ?? "—")
-                        </span>
+                                    <a asp-controller="Task"
+                                           asp-action="Details"
+                                           asp-route-id="@item.TaskId"
+                                           class="btn">
+                                        View
+                                    </a>
 
-                    </div>
+                                    <a asp-controller="Task"
+                                           asp-action="Edit"
+                                           asp-route-id="@item.TaskId"
+                                           class="btn">
+                                        Edit
+                                    </a>
 
-                    <!-- META -->
-                    <div class="card-meta">
-                        <span>📅 @t.TaskStartDate?.ToString("MMM dd, yyyy")</span>
-                        <span>🏁 @(t.TaskEndDate?.ToString("MMM dd, yyyy") ?? "N/A")</span>
-                    </div>
+                                    <form asp-controller="Task"
+                                          asp-action="Delete"
+                                          asp-route-id="@item.TaskId"
+                                          method="post"
+                                          style="display:inline;">
+                                        <button type="submit" class="btn btn-delete">
+                                            Delete
+                                        </button>
+                                    </form>
 
-                    <hr />
-
-                    <!-- ACTIONS -->
-                    <div>
-
-                        <a href="/Task/Details/@t.TaskId" class="btn">View</a>
-
-                        <a href="/Task/Edit/@t.TaskId" class="btn">Edit</a>
-
-                        <form method="post"
-                              action="/Task/Delete/@t.TaskId"
-                              style="display:inline;"
-                              onsubmit="return confirm('Delete this task?');">
-
-                            @Html.AntiForgeryToken()
-
-                            <button type="submit" class="btn btn-delete">
-                                Delete
-                            </button>
-
-                        </form>
-
-                    </div>
-
-                </div>
-            }
-        }
-        else
-        {
-            <p style="text-align:center;">No tasks found</p>
-        }
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                }
+            </tbody>
+        </table>
 
     </div>
 
