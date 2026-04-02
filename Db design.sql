@@ -1,9 +1,9 @@
 CREATE TABLE Roles (
-    role_id INT PRIMARY KEY,
+    role_id INT IDENTITY(1,1) PRIMARY KEY,
     role_name VARCHAR(50) NOT NULL UNIQUE,
     role_description VARCHAR(150),
     parent_role_id INT NULL,
-    
+
     CONSTRAINT FK_Roles_Parent 
     FOREIGN KEY (parent_role_id) 
     REFERENCES Roles(role_id)

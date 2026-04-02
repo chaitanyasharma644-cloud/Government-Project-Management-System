@@ -147,7 +147,6 @@ D:\rubucode\nic project\GPMS\obj\Debug\net10.0\rjsmcshtml.dswa.cache.json
 D:\rubucode\nic project\GPMS\obj\Debug\net10.0\scopedcss\Views\Shared\_Layout.cshtml.rz.scp.css
 D:\rubucode\nic project\GPMS\obj\Debug\net10.0\scopedcss\bundle\GPMS.styles.css
 D:\rubucode\nic project\GPMS\obj\Debug\net10.0\scopedcss\projectbundle\GPMS.bundle.scp.css
-D:\rubucode\nic project\GPMS\obj\Debug\net10.0\compressed\6g32gkfj5i-{0}-b9sayid5wm-b9sayid5wm.gz
 D:\rubucode\nic project\GPMS\obj\Debug\net10.0\compressed\a821nv5vyu-{0}-61n19gt1b8-61n19gt1b8.gz
 D:\rubucode\nic project\GPMS\obj\Debug\net10.0\compressed\qjon1id2pt-{0}-xtxxf3hu2r-xtxxf3hu2r.gz
 D:\rubucode\nic project\GPMS\obj\Debug\net10.0\compressed\12qdbeds3i-{0}-bqjiyaj88i-bqjiyaj88i.gz
@@ -223,4 +222,6 @@ D:\rubucode\nic project\GPMS\obj\Debug\net10.0\refint\GPMS.dll
 D:\rubucode\nic project\GPMS\obj\Debug\net10.0\GPMS.pdb
 D:\rubucode\nic project\GPMS\obj\Debug\net10.0\GPMS.genruntimeconfig.cache
 D:\rubucode\nic project\GPMS\obj\Debug\net10.0\ref\GPMS.dll
-D:\rubucode\nic project\GPMS\obj\Debug\net10.0\compressed\ccf82sms9t-{0}-ky5g54l0e3-ky5g54l0e3.gz
+D:\rubucode\nic project\GPMS\obj\Debug\net10.0\GPMS.sourcelink.json
+D:\rubucode\nic project\GPMS\obj\Debug\net10.0\compressed\ccf82sms9t-{0}-688s47diwl-688s47diwl.gz
+D:\rubucode\nic project\GPMS\obj\Debug\net10.0\compressed\6g32gkfj5i-{0}-78lmthg5wx-78lmthg5wx.gz

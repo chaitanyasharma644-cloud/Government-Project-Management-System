@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using Microsoft.EntityFrameworkCore;
 
 namespace GPMS.Models;
 
@@ -22,28 +21,51 @@ public partial class Assignment
     [Column("task_id")]
     public int? TaskId { get; set; }
 
+    [Required]
     [Column("employee_id")]
     public int EmployeeId { get; set; }
 
+    [Required]
     [Column("assigned_date")]
     public DateOnly AssignedDate { get; set; }
+
+    // =========================
+    // NAVIGATION PROPERTIES
+    // =========================
+
+    [ForeignKey(nameof(EmployeeId))]
+    [InverseProperty("Assignments")]
+    public virtual Employee Employee { get; set; } = null!;
+
+    [ForeignKey(nameof(ProjectId))]
+    [InverseProperty("Assignments")]
+    public virtual Project? Project { get; set; }
+
+    [ForeignKey(nameof(ModuleId))]
+    [InverseProperty("Assignments")]
+    public virtual Module? Module { get; set; }
+
+    [ForeignKey(nameof(TaskId))]
+    [InverseProperty("Assignments")]
+    public virtual Task? Task { get; set; }
 
     [InverseProperty("Assignment")]
     public virtual ICollection<Document> Documents { get; set; } = new List<Document>();
 
-    [ForeignKey("EmployeeId")]
-    [InverseProperty("Assignments")]
-    public virtual Employee Employee { get; set; } = null!;
 
-    [ForeignKey("ModuleId")]
-    [InverseProperty("Assignments")]
-    public virtual Module? Module { get; set; }
+    // =========================
+    //  HELPER PROPERTY 
+    // =========================
 
-    [ForeignKey("ProjectId")]
-    [InverseProperty("Assignments")]
-    public virtual Project? Project { get; set; }
-
-    [ForeignKey("TaskId")]
-    [InverseProperty("Assignments")]
-    public virtual Task? Task { get; set; }
+    [NotMapped]
+    public string AssignmentLevel
+    {
+        get
+        {
+            if (TaskId != null) return "Task";
+            if (ModuleId != null) return "Module";
+            if (ProjectId != null) return "Project";
+            return "Unknown";
+        }
+    }
 }

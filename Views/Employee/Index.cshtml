@@ -1,0 +1,165 @@
+﻿@model IEnumerable<GPMS.Models.Employee>
+
+@{
+    ViewData["Title"] = "Employees";
+}
+
+<link rel="stylesheet" href="~/css/site.css" />
+
+<style>
+    :root {
+        --primary: #6366f1;
+    }
+
+    .page-container {
+        padding: 20px;
+    }
+
+    /* HEADER */
+    .page-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 15px;
+    }
+
+    .page-title {
+        font-size: 22px;
+        font-weight: 600;
+        color: var(--primary);
+    }
+
+    .btn-primary-custom {
+        background-color: var(--primary);
+        color: white;
+        padding: 8px 14px;
+        border-radius: 6px;
+        text-decoration: none;
+        font-size: 14px;
+        border: none;
+    }
+
+        .btn-primary-custom:hover {
+            background-color: #4f46e5;
+            color: white;
+        }
+
+    .btn-danger {
+        background-color: #ef4444;
+    }
+
+        .btn-danger:hover {
+            background-color: #dc2626;
+        }
+
+    /* SEARCH */
+    .search-bar {
+        margin-bottom: 15px;
+    }
+
+        .search-bar input {
+            width: 250px;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+        }
+
+    /* TABLE */
+    .employee-table {
+        width: 100%;
+        border-collapse: collapse;
+        background: white;
+        border-radius: 10px;
+        overflow: hidden;
+    }
+
+        .employee-table thead {
+            background-color: var(--primary);
+            color: white;
+        }
+
+        .employee-table th {
+            padding: 14px;
+            text-align: left;
+            font-weight: 500;
+        }
+
+        .employee-table td {
+            padding: 14px;
+        }
+
+        .employee-table tbody tr {
+            border-bottom: 1px solid #eee;
+            transition: 0.2s;
+        }
+
+            .employee-table tbody tr:hover {
+                background-color: #f5f7ff;
+            }
+
+    .actions a {
+        margin-right: 6px;
+    }
+
+    .no-data {
+        text-align: center;
+        padding: 20px;
+        color: #888;
+    }
+</style>
+
+<div class="page-container">
+
+    <!-- HEADER -->
+    <div class="page-header">
+        <h2 class="page-title">EMPLOYEES</h2>
+        <a asp-action="Create" class="btn-primary-custom">+ Add Employee</a>
+    </div>
+
+    <!-- SEARCH -->
+    <div class="search-bar">
+        <form method="get">
+            <input type="text" name="search" placeholder="Search employee..." value="@Context.Request.Query["search"]" />
+        </form>
+    </div>
+
+    <!-- TABLE -->
+    <table class="employee-table">
+        <thead>
+            <tr>
+                <th>Employee Name</th>
+                <th>Designation</th>
+                <th>Email</th>
+                <th>Username</th>
+                <th style="width:170px;">Actions</th>
+            </tr>
+        </thead>
+
+        <tbody>
+            @if (Model != null && Model.Any())
+            {
+                foreach (var emp in Model)
+                {
+                    <tr>
+                        <td>@emp.EmployeeName</td>
+                        <td>@emp.Designation?.DesignationName</td>
+                        <td>@emp.Email</td>
+                        <td>@emp.Username</td>
+
+                        <td class="actions">
+                            <a asp-action="Edit" asp-route-id="@emp.EmployeeId" class="btn-primary-custom">Edit</a>
+                            <a asp-action="Delete" asp-route-id="@emp.EmployeeId" class="btn-primary-custom btn-danger">Delete</a>
+                        </td>
+                    </tr>
+                }
+            }
+            else
+            {
+                <tr>
+                    <td colspan="5" class="no-data">No employees found</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+
+</div>

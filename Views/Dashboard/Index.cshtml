@@ -15,6 +15,12 @@
             <div class="label">PROJECTS</div>
         </div>
 
+        <div class="stat-card employees">
+            <div class="icon">👥</div>
+            <div class="number">@ViewBag.Employees</div>
+            <div class="label">EMPLOYEES</div>
+        </div>
+
         <div class="stat-card ongoing">
             <div class="icon">▶</div>
             <div class="number">@ViewBag.Ongoing</div>
@@ -22,44 +28,12 @@
         </div>
 
         <div class="stat-card modules">
-            <div class="icon">🧩</div>
-            <div class="number">@ViewBag.Modules</div>
-            <div class="label">MODULES</div>
-        </div>
-
-        <div class="stat-card tasks">
             <div class="icon">✔</div>
-            <div class="number">@ViewBag.Tasks</div>
-            <div class="label">TASKS</div>
-        </div>
-
-        <div class="stat-card completed">
-            <div class="icon">🎯</div>
             <div class="number">@ViewBag.Completed</div>
             <div class="label">COMPLETED</div>
         </div>
 
-        <div class="stat-card assignments">
-            <div class="icon">📌</div>
-            <div class="number">@ViewBag.Assignments</div>
-            <div class="label">ASSIGNMENTS</div>
-        </div>
-
-        <div class="stat-card employees">
-            <div class="icon">👥</div>
-            <div class="number">@ViewBag.Employees</div>
-            <div class="label">EMPLOYEES</div>
-        </div>
-
-        <div class="stat-card documents">
-            <div class="icon">🗃️</div>
-            <div class="number">0</div>
-            <div class="label">DOCUMENTS</div>
-        </div>
-
     </div>
-
-
     <!-- QUICK ACTIONS -->
 
     <div class="panel quick-actions">
@@ -68,17 +42,23 @@
 
         <div class="actions">
 
+            <button class="qa-project" onclick="location.href='/Project/Create'">
+                + New Project
+            </button>
+
+            <button class="qa-module" onclick="location.href='/Module/Create'">+ New Module</button>
+
+            <button class="qa-task" onclick="location.href='/Task/Create'">+ New Task</button>
+
             <button class="qa-employee">+ New Employee</button>
-
-            <button class="qa-project">+ New Project</button>
-
-            <button class="qa-module">+ New Module</button>
-
-            <button class="qa-task">+ New Task</button>
 
             <button class="qa-assignment">+ New Assignment</button>
 
             <button class="qa-designation">+ New Designation</button>
+
+            <button class="qa-role" onclick="location.href='/Role/Create'">+ New Role</button>
+
+            <button class="qa-permission">+ New Permission</button>
 
         </div>
 

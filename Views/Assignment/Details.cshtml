@@ -1,0 +1,121 @@
+﻿@model GPMS.ViewModels.AssignmentViewModel
+
+<link rel="stylesheet" href="~/css/site.css" />
+
+<div class="page-container">
+
+    <!-- =========================
+        HEADER (DYNAMIC)
+    ========================= -->
+    <div class="page-header">
+        <h2 class="page-title">
+            @ViewBag.Level Details
+        </h2>
+    </div>
+
+
+    <!-- =========================
+        ASSIGNED EMPLOYEES
+    ========================= -->
+    <div class="card mt-4">
+
+        <div class="card-body">
+
+            <h4 class="mb-3">Assigned Employees</h4>
+
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Username</th>
+                        <th>Email</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    @if (Model.AssignedEmployees != null && Model.AssignedEmployees.Any())
+                    {
+                        foreach (var emp in Model.AssignedEmployees)
+                        {
+                            <tr>
+                                <td>@emp.Username</td>
+                                <td>@emp.Email</td>
+                                <td>
+                                    <!-- Optional: Delete button -->
+                                    <!-- You can enable later if needed -->
+                                </td>
+                            </tr>
+                        }
+                    }
+                    else
+                    {
+                        <tr>
+                            <td colspan="3">No employees assigned</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+
+        </div>
+    </div>
+
+
+    <!-- =========================
+        ASSIGN FORM
+    ========================= -->
+    <div class="card mt-4">
+
+        <div class="card-body">
+
+            <h4 class="mb-3">Assign Employee</h4>
+
+            <form asp-action="Assign" method="post">
+
+                <!-- 🔹 Project -->
+                <div class="form-group mb-2">
+                    <label>Project</label>
+                    <select asp-for="project_id" asp-items="Model.Projects" class="form-control">
+                        <option value="">-- Select Project --</option>
+                    </select>
+                </div>
+
+                <!-- 🔹 Module -->
+                <div class="form-group mb-2">
+                    <label>Module</label>
+                    <select asp-for="module_id" asp-items="Model.Modules" class="form-control">
+                        <option value="">-- Select Module --</option>
+                    </select>
+                </div>
+
+                <!-- 🔹 Task -->
+                <div class="form-group mb-2">
+                    <label>Task</label>
+                    <select asp-for="task_id" asp-items="Model.Tasks" class="form-control">
+                        <option value="">-- Select Task --</option>
+                    </select>
+                </div>
+
+                <!-- 🔹 Employee -->
+                <div class="form-group mb-2">
+                    <label>Employee</label>
+                    <select asp-for="employee_id" asp-items="Model.Employees" class="form-control" required>
+                        <option value="">-- Select Employee --</option>
+                    </select>
+                </div>
+
+                <!-- 🔹 Date -->
+                <div class="form-group mb-3">
+                    <label>Assignment Date</label>
+                    <input asp-for="assigned_date" type="date" class="form-control" />
+                </div>
+
+                <button type="submit" class="btn btn-primary">
+                    Assign Employee
+                </button>
+
+            </form>
+
+        </div>
+    </div>
+
+</div>

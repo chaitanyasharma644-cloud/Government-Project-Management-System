@@ -1,0 +1,108 @@
+﻿@model IEnumerable<Module>
+
+@{
+    ViewData["Title"] = "Modules";
+}
+
+<div class="page-container">
+
+    <!-- HEADER -->
+    <div class="page-header">
+        <h2 class="page-title">MODULES</h2>
+        <a href="/Module/Create" class="btn">+ New Module</a>
+    </div>
+
+    <!-- FILTER / SEARCH -->
+    <div class="search-bar module-search-bar">
+
+        <select class="form-control" id="projectFilter">
+            <option value="">All Projects</option>
+
+            @foreach (var p in ViewBag.Projects)
+            {
+                <option value="@p.ProjectId">@p.ProjectName</option>
+            }
+        </select>
+
+        <input type="text"
+               id="moduleSearch"
+               class="form-control"
+               placeholder="Search modules..." />
+
+        <button class="btn btn-primary-custom" onclick="searchModules()">Search</button>
+
+    </div>
+
+    <!-- MODULE GRID -->
+    <div class="cards-grid">
+
+        @foreach (var m in Model)
+        {
+            <div class="card module">
+
+                <!-- TOP -->
+                <div class="card-top">
+
+                    <h3 class="module-name">@m.ModuleName</h3>
+
+                    <span class="status @(m.ModuleStatus == "Completed" ? "completed" : "ongoing")">
+                        @(m.ModuleStatus ?? "—")
+                    </span>
+
+                </div>
+
+                <!-- META -->
+                <div class="card-meta">
+
+                    <span>🎯 @m.Tasks.Count tasks</span>
+
+                    <span>📅 @m.ModuleStartDate?.ToString("MMM dd, yyyy")</span>
+
+                    <span>🏁 @(m.ModuleEndDate?.ToString("MMM dd, yyyy") ?? "N/A")</span>
+
+                </div>
+
+                <hr />
+
+                <!-- ACTIONS -->
+                <div>
+
+                    <a href="/Module/Details/@m.ModuleId" class="btn">View</a>
+
+                    <a href="/Module/Edit/@m.ModuleId" class="btn">Edit</a>
+
+                    <form method="post"
+                          action="/Module/Delete/@m.ModuleId"
+                          style="display:inline;"
+                          onsubmit="return confirm('Delete this module?');">
+
+                        @Html.AntiForgeryToken()
+
+                        <button type="submit" class="btn btn-delete">Delete</button>
+
+                    </form>
+
+                </div>
+
+            </div>
+        }
+
+    </div>
+
+</div>
+
+<script>
+    function searchModules() {
+
+        let input = document.getElementById("moduleSearch").value.toLowerCase();
+        let cards = document.querySelectorAll(".card.module");
+
+        cards.forEach(card => {
+
+            let name = card.querySelector(".module-name").innerText.toLowerCase();
+
+            card.style.display = name.includes(input) ? "block" : "none";
+
+        });
+    }
+</script>

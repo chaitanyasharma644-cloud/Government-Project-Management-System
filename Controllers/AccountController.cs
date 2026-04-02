@@ -1,10 +1,15 @@
 ﻿using GPMS.Data;
 using GPMS.ViewModels;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.Cookies;
+using System.Security.Claims;
 
 namespace GPMS.Controllers
 {
+    [AllowAnonymous]
     public class AccountController : Controller
     {
         private readonly AppDbContext _db;
@@ -49,15 +54,45 @@ namespace GPMS.Controllers
                 return View(model);
             }
 
+            // Create Claims for authentication cookie
+            var claims = new List<Claim>
+            {
+                new Claim(ClaimTypes.Name, user.EmployeeName),
+                new Claim(ClaimTypes.NameIdentifier, user.EmployeeId.ToString())
+            };
+
+            var claimsIdentity = new ClaimsIdentity(
+                claims,
+                CookieAuthenticationDefaults.AuthenticationScheme
+            );
+
+            var authProperties = new AuthenticationProperties
+            {
+                IsPersistent = true
+            };
+
+            // Sign in user (creates authentication cookie)
+            await HttpContext.SignInAsync(
+                CookieAuthenticationDefaults.AuthenticationScheme,
+                new ClaimsPrincipal(claimsIdentity),
+                authProperties
+            );
+
+            // Keep session if you still want it
             HttpContext.Session.SetInt32("EmployeeId", user.EmployeeId);
             HttpContext.Session.SetString("EmployeeName", user.EmployeeName);
 
             return RedirectToAction("Index", "Dashboard");
         }
 
-        public IActionResult Logout()
+        public async Task<IActionResult> Logout()
         {
             HttpContext.Session.Clear();
+
+            await HttpContext.SignOutAsync(
+                CookieAuthenticationDefaults.AuthenticationScheme
+            );
+
             return RedirectToAction("Login");
         }
 

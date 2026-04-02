@@ -1,0 +1,68 @@
+﻿@model GPMS.Models.Task
+<link rel="stylesheet" href="~/css/project.css" />
+
+<div class="page-container">
+
+    <div class="form-card">
+
+        <!-- HEADER -->
+        <div class="page-header">
+            <div>
+                <h2 class="page-title">@Model.TaskName</h2>
+                <p class="text-muted">
+                    @Model.Module?.ModuleName • @Model.Module?.Project?.ProjectName
+                </p>
+            </div>
+
+            <span class="status @(Model.TaskStatus?.ToLower())">
+                @Model.TaskStatus
+            </span>
+        </div>
+
+        <!-- DESCRIPTION -->
+        <div class="form-group">
+            <label>Description</label>
+            <p>@Model.TaskDescription</p>
+        </div>
+
+        <!-- GRID DETAILS -->
+        <div class="form-row">
+
+            <div class="form-group">
+                <label>Project</label>
+                <p>@Model.Module?.Project?.ProjectName</p>
+            </div>
+
+            <div class="form-group">
+                <label>Module</label>
+                <p>@Model.Module?.ModuleName</p>
+            </div>
+
+        </div>
+
+        <div class="form-row">
+
+            <div class="form-group">
+                <label>Start Date</label>
+                <p>@Model.TaskStartDate?.ToString("dd MMM yyyy")</p>
+            </div>
+
+            <div class="form-group">
+                <label>End Date</label>
+                <p>@Model.TaskEndDate?.ToString("dd MMM yyyy")</p>
+            </div>
+
+        </div>
+
+        <!-- ACTIONS -->
+        <div style="display:flex; justify-content:space-between; margin-top:20px;">
+
+            <a asp-action="Index" class="btn">
+                ← Back
+            </a>
+
+        </div>
+
+    </div>
+
+</div>
