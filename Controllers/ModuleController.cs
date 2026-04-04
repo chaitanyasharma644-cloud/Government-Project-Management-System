@@ -45,6 +45,11 @@ namespace GPMS.Controllers
             var module = await _context.Modules
                 .Include(m => m.Project)
                 .Include(m => m.Tasks)
+
+                // 🔥 ADD THIS
+                .Include(m => m.Assignments)
+                    .ThenInclude(a => a.Employee)
+
                 .FirstOrDefaultAsync(m => m.ModuleId == id);
 
             if (module == null)

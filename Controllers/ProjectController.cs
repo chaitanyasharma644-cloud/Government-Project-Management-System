@@ -34,35 +34,16 @@ namespace GPMS.Controllers
         public async Task<IActionResult> Details(int id)
         {
             var project = await _context.Projects
-                                        .Include(p => p.Modules)
-                                        .ThenInclude(m => m.Tasks)
-                                        .FirstOrDefaultAsync(p => p.ProjectId == id);
+                .Include(p => p.Modules)
+                    .ThenInclude(m => m.Tasks)
+                .Include(p => p.Assignments)
+                    .ThenInclude(a => a.Employee)
+                .FirstOrDefaultAsync(p => p.ProjectId == id);
 
             if (project == null)
-            {
                 return NotFound();
-            }
 
             return View(project);
-        }
-
-        // =========================================
-        // GET: /Project/{name}
-        // =========================================
-        [HttpGet("/Project/Index/{name}")]
-        public async Task<IActionResult> DetailsByName(string name)
-        {
-            var project = await _context.Projects
-                                        .Include(p => p.Modules)
-                                        .ThenInclude(m => m.Tasks)
-                                        .FirstOrDefaultAsync(p => p.ProjectName == name);
-
-            if (project == null)
-            {
-                return NotFound();
-            }
-
-            return View("Details", project);
         }
 
         // =========================================

@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 
-// ✅ ALIAS (IMPORTANT FIX)
+// ALIAS (IMPORTANT FIX)
 using TaskModel = GPMS.Models.Task;
 
 namespace GPMS.Controllers
@@ -20,7 +20,7 @@ namespace GPMS.Controllers
         }
 
         // ==============================
-        // ✅ TASK LIST WITH FILTERING
+        // TASK LIST WITH FILTERING
         // ==============================
         public async System.Threading.Tasks.Task<IActionResult> Index(int? projectId, int? moduleId, string search)
         {
@@ -29,13 +29,13 @@ namespace GPMS.Controllers
                 .ThenInclude(m => m.Project)
                 .AsQueryable();
 
-            // 🔍 Filter by Project
+            //  Filter by Project
             if (projectId.HasValue)
             {
                 tasks = tasks.Where(t => t.Module.ProjectId == projectId);
             }
 
-            // 🔍 Filter by Module
+            //  Filter by Module
             if (moduleId.HasValue)
             {
                 tasks = tasks.Where(t => t.ModuleId == moduleId);
@@ -72,7 +72,12 @@ namespace GPMS.Controllers
         {
             var task = await _context.Tasks
                 .Include(t => t.Module)
-                .ThenInclude(m => m.Project)
+                    .ThenInclude(m => m.Project)
+
+                // 🔥 ADD THIS (VERY IMPORTANT)
+                .Include(t => t.Assignments)
+                    .ThenInclude(a => a.Employee)
+
                 .FirstOrDefaultAsync(t => t.TaskId == id);
 
             if (task == null)

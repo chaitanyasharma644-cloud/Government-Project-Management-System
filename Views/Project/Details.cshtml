@@ -4,6 +4,8 @@
     ViewData["Title"] = "Project Details";
 }
 
+<link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+
 <div class="page-container">
 
     <!-- HEADER -->
@@ -78,6 +80,77 @@
 
             </div>
         }
+
+    </div>
+
+    <!-- ============================= -->
+    <!-- ASSIGNED EMPLOYEES SECTION -->
+    <!-- ============================= -->
+
+    <div class="assignment-container">
+
+        <div class="assignment-header">
+            <h3>Assigned Employees</h3>
+
+            <a asp-controller="Assignment"
+                   asp-action="AssignEmployee"
+                   asp-route-id="@Model.ProjectId"
+                   asp-route-type="module"
+                   class="btn">
+                + Add Assignment
+            </a>
+        </div>
+
+        <table class="assignment-table">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Email</th>
+                    <th>Username</th>
+                    <th>Assigned Date</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                @if (Model.Assignments != null && Model.Assignments.Any())
+                {
+                    foreach (var item in Model.Assignments)
+                    {
+                        <tr>
+                            <td>@item.Employee.EmployeeName</td>
+                            <td>@item.Employee.Email</td>
+                            <td>@item.Employee.Username</td>
+                            <td>@item.AssignedDate.ToString("dd MMM yyyy")</td>
+
+                            <td class="action-buttons">
+                                <a asp-controller="Assignment"
+                                       asp-action="EditAssignment"
+                                       asp-route-id="@item.AssignmentId"
+                                       class="btn-edit">
+                                    Edit
+                                </a>
+
+                                <a asp-controller="Assignment"
+                                       asp-action="DeleteAssignment"
+                                       asp-route-id="@item.AssignmentId"
+                                       class="btn-delete">
+                                    Delete
+                                </a>
+                            </td>
+                        </tr>
+                    }
+                }
+                else
+                {
+                    <tr>
+                        <td colspan="5" class="no-data">
+                            No employees assigned
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
 
     </div>
 
