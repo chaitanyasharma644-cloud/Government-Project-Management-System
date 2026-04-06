@@ -38,6 +38,8 @@ namespace GPMS.Controllers
                     .ThenInclude(m => m.Tasks)
                 .Include(p => p.Assignments)
                     .ThenInclude(a => a.Employee)
+                .Include(p => p.Assignments)
+                    .ThenInclude(a => a.Role)
                 .FirstOrDefaultAsync(p => p.ProjectId == id);
 
             if (project == null)

@@ -1,14 +1,14 @@
-﻿@model GPMS.Models.Task
+﻿@model GPMS.Models.Module
 
 @{
-    ViewData["Title"] = "Create Task";
+    ViewData["Title"] = "Create Module";
 }
 
 <div class="page-container">
 
     <div class="form-card">
 
-        <h2 class="page-title">Create Task</h2>
+        <h2 class="page-title">Create Module</h2>
 
         <form asp-action="Create" method="post">
 
@@ -26,44 +26,33 @@
                 <span asp-validation-for="ProjectId" class="text-danger"></span>
             </div>
 
-            <!-- SELECT MODULE -->
+            <!-- MODULE NAME -->
             <div class="form-group">
-                <label>Select Module</label>
-                <select id="ModuleId"
-                        asp-for="ModuleId"
-                        class="form-control">
-                    <option value="">-- Select Module --</option>
-                </select>
-                <span asp-validation-for="ModuleId" class="text-danger"></span>
-            </div>
-
-            <!-- TASK NAME -->
-            <div class="form-group">
-                <label>Task Name</label>
-                <input asp-for="TaskName"
+                <label>Module Name</label>
+                <input asp-for="ModuleName"
                        class="form-control"
                        placeholder="Enter task name..." />
-                <span asp-validation-for="TaskName" class="text-danger"></span>
+                <span asp-validation-for="ModuleName" class="text-danger"></span>
             </div>
 
             <!-- DESCRIPTION -->
             <div class="form-group">
                 <label>Description</label>
-                <textarea asp-for="TaskDescription"
+                <textarea asp-for="Details"
                           class="form-control"
-                          placeholder="Enter task details..."></textarea>
-                <span asp-validation-for="TaskDescription" class="text-danger"></span>
+                          placeholder="Enter module details..."></textarea>
+                <span asp-validation-for="Details" class="text-danger"></span>
             </div>
 
             <!-- STATUS -->
             <div class="form-group">
                 <label>Status</label>
-                <select asp-for="TaskStatus" class="form-control">
+                <select asp-for="ModuleStatus" class="form-control">
                     <option value="">-- Select --</option>
                     <option>Ongoing</option>
                     <option>Completed</option>
                 </select>
-                <span asp-validation-for="TaskStatus" class="text-danger"></span>
+                <span asp-validation-for="ModuleStatus" class="text-danger"></span>
             </div>
 
             <!-- DATES -->
@@ -71,25 +60,25 @@
 
                 <div class="form-group">
                     <label>Start Date</label>
-                    <input asp-for="TaskStartDate"
+                    <input asp-for="ModuleStartDate"
                            type="date"
                            class="form-control" />
-                    <span asp-validation-for="TaskStartDate" class="text-danger"></span>
+                    <span asp-validation-for="ModuleStartDate" class="text-danger"></span>
                 </div>
 
                 <div class="form-group">
                     <label>End Date</label>
-                    <input asp-for="TaskEndDate"
+                    <input asp-for="ModuleEndDate"
                            type="date"
                            class="form-control" />
-                    <span asp-validation-for="TaskEndDate" class="text-danger"></span>
+                    <span asp-validation-for="ModuleEndDate" class="text-danger"></span>
                 </div>
 
             </div>
 
             <!-- BUTTON -->
             <button type="submit" class="btn-save">
-                Create Task
+                Create Module
             </button>
 
         </form>
@@ -103,37 +92,29 @@
     <partial name="_ValidationScriptsPartial" />
 
     <script>
-        document.getElementById("projectDropdown").addEventListener("change", function () {
+        document.addEventListener("DOMContentLoaded", function () {
 
-            var projectId = this.value;
-            let moduleDropdown = document.getElementById("ModuleId");
+            const projectDropdown = document.getElementById("projectDropdown");
 
-            moduleDropdown.innerHTML = '<option value="">-- Select Module --</option>';
+            if (!projectDropdown) return;
 
-            if (projectId === "") {
-                moduleDropdown.disabled = true;
-                return;
-            }
+            projectDropdown.addEventListener("change", function () {
 
-            moduleDropdown.disabled = false;
+                const projectId = this.value;
 
-            fetch('/Task/GetModulesByProject?projectId=' + projectId)
-                .then(response => response.json())
-                .then(data => {
+                if (!projectId) {
+                    console.log("No project selected");
+                    return;
+                }
 
-                    data.forEach(m => {
-                        let option = document.createElement("option");
+                console.log("Selected Project ID:", projectId);
 
-                        option.value = m.moduleId || m.ModuleId;
-                        option.text = m.moduleName || m.ModuleName;
+                // 👉 Do whatever you want here
+                // Example:
+                // window.location.href = "/Project/Details/" + projectId;
 
-                        moduleDropdown.appendChild(option);
-                    });
+            });
 
-                    if (data.length > 0) {
-                        moduleDropdown.value = data[0].moduleId || data[0].ModuleId;
-                    }
-                });
         });
     </script>
 }

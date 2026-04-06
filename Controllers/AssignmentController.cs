@@ -1,5 +1,6 @@
 ﻿using GPMS.Data;
 using GPMS.Models;
+using GPMS.ViewModels;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
@@ -20,18 +21,23 @@ namespace GPMS.Controllers
         // =========================================
         public IActionResult AssignEmployee(int id, string type)
         {
-            // type = "project" / "module" / "task"
+            var model = new AssignmentViewModel
+            {
+                Employees = new SelectList(
+                    _context.Employees.ToList(),   // 🔥 MUST BE ToList()
+                    "EmployeeId",
+                    "EmployeeName"
+                ),
 
-            ViewBag.EmployeeList = new SelectList(
-                _context.Employees,
-                "EmployeeId",
-                "EmployeeName"
-            );
+                Projects = new SelectList(_context.Projects, "ProjectId", "ProjectName"),
+                Modules = new SelectList(_context.Modules, "ModuleId", "ModuleName"),
+                Tasks = new SelectList(_context.Tasks, "TaskId", "TaskName"),
+                Roles = new SelectList(_context.Roles, "RoleId", "RoleName"),
 
-            ViewBag.Type = type;
-            ViewBag.RefId = id;
+                CurrentLevel = type
+            };
 
-            return View();
+            return View(model);
         }
 
         // =========================================
@@ -39,50 +45,55 @@ namespace GPMS.Controllers
         // =========================================
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> AssignEmployee(int employeeId, int refId, string type)
+        public async Task<IActionResult> AssignEmployee(AssignmentViewModel model)
         {
-            // 🚫 Prevent duplicate assignment
-            bool exists = await _context.Assignments.AnyAsync(a =>
-                a.EmployeeId == employeeId &&
-                (
-                    (type == "project" && a.ProjectId == refId) ||
-                    (type == "module" && a.ModuleId == refId) ||
-                    (type == "task" && a.TaskId == refId)
-                )
-            );
-
-            if (exists)
+            // 🚫 Check employee selected
+            if (model.EmployeeId == 0)
             {
-                return Content("Employee already assigned!");
+                ModelState.AddModelError("EmployeeId", "Please select an employee.");
+            }
+
+            // 🚫 Check if employee exists in DB
+            bool employeeExists = await _context.Employees
+                .AnyAsync(e => e.EmployeeId == model.EmployeeId);
+
+            if (!employeeExists)
+            {
+                ModelState.AddModelError("", "Invalid Employee selected.");
+            }
+
+            if (!ModelState.IsValid)
+            {
+                // reload dropdowns
+                model.Employees = new SelectList(_context.Employees, "EmployeeId", "EmployeeName");
+                model.Projects = new SelectList(_context.Projects, "ProjectId", "ProjectName");
+                model.Modules = new SelectList(_context.Modules, "ModuleId", "ModuleName");
+                model.Tasks = new SelectList(_context.Tasks, "TaskId", "TaskName");
+                model.Roles = new SelectList(_context.Roles, "RoleId", "RoleName");
+
+                return View(model);
             }
 
             var assignment = new Assignment
             {
-                EmployeeId = employeeId,
-                AssignedDate = DateOnly.FromDateTime(DateTime.Now)
+                EmployeeId = model.EmployeeId,
+                RoleId = model.RoleId,
+                AssignedDate = model.AssignedDate
             };
 
-            // 🔥 Assign correct FK
-            if (type == "project")
-                assignment.ProjectId = refId;
+            if (model.ProjectId != null)
+                assignment.ProjectId = model.ProjectId;
 
-            else if (type == "module")
-                assignment.ModuleId = refId;
+            if (model.ModuleId != null)
+                assignment.ModuleId = model.ModuleId;
 
-            else if (type == "task")
-                assignment.TaskId = refId;
+            if (model.TaskId != null)
+                assignment.TaskId = model.TaskId;
 
             _context.Assignments.Add(assignment);
             await _context.SaveChangesAsync();
 
-            // 🔁 Redirect back
-            return type switch
-            {
-                "project" => RedirectToAction("Details", "Project", new { id = refId }),
-                "module" => RedirectToAction("Details", "Module", new { id = refId }),
-                "task" => RedirectToAction("Details", "Task", new { id = refId }),
-                _ => RedirectToAction("Index", "Project")
-            };
+            return RedirectToAction("Index", "Project");
         }
 
         // =========================================
@@ -123,7 +134,6 @@ namespace GPMS.Controllers
 
             await _context.SaveChangesAsync();
 
-            // 🔁 Redirect based on level
             if (assignment.ProjectId != null)
                 return RedirectToAction("Details", "Project", new { id = assignment.ProjectId });
 
@@ -153,7 +163,6 @@ namespace GPMS.Controllers
             _context.Assignments.Remove(assignment);
             await _context.SaveChangesAsync();
 
-            // 🔁 Redirect back
             if (projectId != null)
                 return RedirectToAction("Details", "Project", new { id = projectId });
 

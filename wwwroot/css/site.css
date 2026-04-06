@@ -150,6 +150,9 @@ body {
     border: 1px solid rgba(255,255,255,0.4);
     box-shadow: 0 6px 18px rgba(0,0,0,0.06);
     transition: all 0.25s ease;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
 }
 
     .card:hover {
@@ -172,10 +175,15 @@ body {
    CARD CONTENT
 ========================= */
 
+.card-content {
+    flex-grow: 1;
+}
+
 .card-top {
     display: flex;
     justify-content: space-between;
     align-items: center;
+    margin-bottom: 15px;
 }
 
 .card-meta {
@@ -184,7 +192,7 @@ body {
     gap: 12px;
     font-size: 13px;
     color: #475569;
-    margin: 10px 0;
+    margin: 10px 0 15px;
 }
 
 /* =========================
@@ -523,20 +531,6 @@ textarea[readonly] {
     border-radius: 8px;
     text-decoration: none;
 }
-
-/* Delete (like your image) */
-.btn-delete {
-    background: #ef4444;
-    color: white;
-    padding: 6px 12px;
-    border-radius: 8px;
-    text-decoration: none;
-}
-
-    .btn-edit:hover,
-    .btn-delete:hover {
-        opacity: 0.9;
-    }
 
 /* Empty row */
 .no-data {

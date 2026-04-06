@@ -8,55 +8,77 @@
 
     <div class="form-card">
 
-        <h2 class="page-title">Edit Role</h2>
+        <!-- PAGE HEADER -->
+        <div class="page-header">
+            <h2 class="page-title">Edit Role</h2>
+        </div>
 
         <form asp-action="Edit" method="post">
-
             @Html.AntiForgeryToken()
 
-            <!-- IMPORTANT: ROLE ID -->
+            <!-- ROLE ID -->
             <input type="hidden" name="id" value="@Context.Request.RouteValues["id"]" />
 
             <!-- ROLE NAME -->
             <div class="form-group">
                 <label>Role Name</label>
-                <input asp-for="RoleName" class="form-control" />
+                <input asp-for="RoleName" class="form-control" placeholder="Enter role name" />
                 <span asp-validation-for="RoleName" class="text-danger"></span>
             </div>
 
             <!-- DESCRIPTION -->
             <div class="form-group">
                 <label>Description</label>
-                <textarea asp-for="Description" class="form-control"></textarea>
+                <textarea asp-for="Description" class="form-control" rows="3"
+                          placeholder="Enter role description"></textarea>
                 <span asp-validation-for="Description" class="text-danger"></span>
             </div>
 
             <!-- PERMISSIONS -->
             <div class="form-group">
-                <label>PERMISSIONS</label>
+                <label>Select Permissions</label>
 
-                <div class="checkbox-list">
-                    @for (int i = 0; i < Model.Permissions.Count; i++)
-                    {
-                        <div class="checkbox-item">
+                @if (Model.Permissions != null && Model.Permissions.Any())
+                {
+                    <div class="cards-grid">
 
-                            <input type="checkbox"
-                                   asp-for="Permissions[i].IsSelected" />
+                        @for (int i = 0; i < Model.Permissions.Count; i++)
+                        {
+                            <label class="card role permission-card">
 
-                            <input type="hidden" asp-for="Permissions[i].Id" />
-                            <input type="hidden" asp-for="Permissions[i].PermissionName" />
+                                <!-- HIDDEN -->
+                                <input type="hidden" asp-for="Permissions[i].Id" />
+                                <input type="hidden" asp-for="Permissions[i].PermissionName" />
 
-                            <label>@Model.Permissions[i].PermissionName</label>
+                                <!-- CHECKBOX -->
+                                <input type="checkbox"
+                                       asp-for="Permissions[i].IsSelected"
+                                       class="permission-checkbox" />
 
-                        </div>
-                    }
-                </div>
+                                <!-- CONTENT -->
+                                <div class="permission-content">
+                                    <h4>@Model.Permissions[i].PermissionName</h4>
+                                    <p class="permission-text">Grant access</p>
+                                </div>
+
+                            </label>
+                        }
+
+                    </div>
+                }
+                else
+                {
+                    <p class="no-data">No permissions available</p>
+                }
+
             </div>
 
             <!-- BUTTON -->
-            <button type="submit" class="btn-save">
-                Save Changes
-            </button>
+            <div class="form-actions">
+                <button type="submit" class="btn-save">
+                    Save Changes
+                </button>
+            </div>
 
         </form>
 

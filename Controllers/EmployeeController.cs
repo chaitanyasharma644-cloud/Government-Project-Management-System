@@ -1,6 +1,7 @@
 ﻿using GPMS.Data;
 using GPMS.Models;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 
 namespace GPMS.Controllers
@@ -14,14 +15,13 @@ namespace GPMS.Controllers
             _context = context;
         }
 
-        //  INDEX
-        public IActionResult Index(string search)
+        // ✅ INDEX
+        public async Task<IActionResult> Index(string search)
         {
             var employees = _context.Employees
                 .Include(e => e.Designation)
                 .AsQueryable();
 
-            //  Search functionality
             if (!string.IsNullOrEmpty(search))
             {
                 employees = employees.Where(e =>
@@ -31,82 +31,114 @@ namespace GPMS.Controllers
                 );
             }
 
-            return View(employees.ToList());
+            return View(await employees.ToListAsync()); // ✅ List
         }
 
-        //  CREATE (GET)
+        // ✅ CREATE (GET)
         public IActionResult Create()
         {
-            ViewBag.Designations = _context.Designations.ToList();
+            ViewBag.DesignationList = _context.Designations
+                .Select(d => new SelectListItem
+                {
+                    Value = d.DesignationId.ToString(),
+                    Text = d.DesignationName
+                }).ToList();
+
             return View();
         }
 
-        //  CREATE (POST)
+        // ✅ CREATE (POST)
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult Create(Employee emp)
+        public async Task<IActionResult> Create(Employee employee)
         {
             if (ModelState.IsValid)
             {
-                _context.Employees.Add(emp);
-                _context.SaveChanges();
-                return RedirectToAction(nameof(Index));
+                employee.Epassword = "nicemployee123#";
+
+                _context.Add(employee);
+                await _context.SaveChangesAsync();
+
+                return RedirectToAction("Index");
             }
 
-            ViewBag.Designations = _context.Designations.ToList();
-            return View(emp);
+            // reload dropdown if error
+            ViewBag.DesignationList = _context.Designations
+                .Select(d => new SelectListItem
+                {
+                    Value = d.DesignationId.ToString(),
+                    Text = d.DesignationName
+                }).ToList();
+
+            return View(employee);
         }
 
         // ✅ EDIT (GET)
-        public IActionResult Edit(int id)
+        public async Task<IActionResult> Edit(int id)
         {
-            var emp = _context.Employees.Find(id);
-            if (emp == null) return NotFound();
+            var emp = await _context.Employees.FindAsync(id);
 
-            ViewBag.Designations = _context.Designations.ToList();
-            return View(emp);
+            if (emp == null)
+                return NotFound();
+
+            ViewBag.Designations = await _context.Designations.ToListAsync();
+
+            return View(emp); // ✅ SINGLE OBJECT
         }
 
         // ✅ EDIT (POST)
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult Edit(int id, Employee emp)
+        public async Task<IActionResult> Edit(int id, Employee emp)
         {
-            if (id != emp.EmployeeId) return NotFound();
+            if (id != emp.EmployeeId)
+                return NotFound();
 
             if (ModelState.IsValid)
             {
-                _context.Update(emp);
-                _context.SaveChanges();
+                try
+                {
+                    _context.Update(emp);
+                    await _context.SaveChangesAsync();
+                }
+                catch (DbUpdateConcurrencyException)
+                {
+                    if (!_context.Employees.Any(e => e.EmployeeId == emp.EmployeeId))
+                        return NotFound();
+                    else
+                        throw;
+                }
+
                 return RedirectToAction(nameof(Index));
             }
 
-            ViewBag.Designations = _context.Designations.ToList();
             return View(emp);
         }
 
         // ✅ DELETE (GET)
-        public IActionResult Delete(int id)
+        public async Task<IActionResult> Delete(int id)
         {
-            var emp = _context.Employees
+            var emp = await _context.Employees
                 .Include(e => e.Designation)
-                .FirstOrDefault(e => e.EmployeeId == id);
+                .FirstOrDefaultAsync(e => e.EmployeeId == id);
 
-            if (emp == null) return NotFound();
+            if (emp == null)
+                return NotFound();
 
-            return View(emp);
+            return View(emp); // ✅ SINGLE OBJECT
         }
 
         // ✅ DELETE (POST)
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
-        public IActionResult DeleteConfirmed(int id)
+        public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            var emp = _context.Employees.Find(id);
+            var emp = await _context.Employees.FindAsync(id);
+
             if (emp != null)
             {
                 _context.Employees.Remove(emp);
-                _context.SaveChanges();
+                await _context.SaveChangesAsync();
             }
 
             return RedirectToAction(nameof(Index));

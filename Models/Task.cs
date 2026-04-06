@@ -59,6 +59,6 @@ public partial class Task
 
     [ForeignKey("ModuleId")]
     [InverseProperty("Tasks")]
-    // ✅ ADD THE '?' AND REMOVE '= null!'
+   
     public virtual Module? Module { get; set; }
 }

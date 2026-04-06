@@ -1,6 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using GPMS.Models;
 using Microsoft.AspNetCore.Mvc.Rendering;
+using System;
+using System.Collections.Generic;
 
 namespace GPMS.ViewModels
 {
@@ -10,41 +11,44 @@ namespace GPMS.ViewModels
         // 🔹 SELECTED VALUES
         // =========================
 
-        public int? project_id { get; set; }
-        public int? module_id { get; set; }
-        public int? task_id { get; set; }
+        public int? ProjectId { get; set; }
+        public int? ModuleId { get; set; }
+        public int? TaskId { get; set; }
 
-        public int employee_id { get; set; }
+        public int EmployeeId { get; set; }
 
-        public DateOnly assigned_date { get; set; }
+        public int? RoleId { get; set; }   // ✅ FIXED (important)
+
+        public DateOnly AssignedDate { get; set; } = DateOnly.FromDateTime(DateTime.Now);
 
 
         // =========================
         // 🔹 DISPLAY DATA
         // =========================
 
-        // Employees assigned to current Project / Module / Task
-        public List<GPMS.Models.Employee> AssignedEmployees { get; set; } = new();
+        public string ProjectName { get; set; } = "";
+        public string ModuleName { get; set; } = "";
+        public string TaskName { get; set; } = "";
+
+        public List<Employee> AssignedEmployees { get; set; } = new();
 
 
         // =========================
         // 🔹 DROPDOWNS
         // =========================
 
+        public SelectList Employees { get; set; } = new SelectList(new List<object>());
         public SelectList Projects { get; set; } = new SelectList(new List<object>());
         public SelectList Modules { get; set; } = new SelectList(new List<object>());
         public SelectList Tasks { get; set; } = new SelectList(new List<object>());
-        public SelectList Employees { get; set; } = new SelectList(new List<object>());
+        public SelectList Roles { get; set; } = new SelectList(new List<object>());  // ✅ ADDED
 
 
         // =========================
-        // 🔥 OPTIONAL (VERY USEFUL)
+        // 🔹 CONTROL FLAGS
         // =========================
 
-        // Helps identify which page is being used
         public string CurrentLevel { get; set; } = "";
-
-        // Store current entity name (optional UI use)
-        public string Title { get; set; } = "";
+        public string Title { get; set; } = "Assign Employee";
     }
 }

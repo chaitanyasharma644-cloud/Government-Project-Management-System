@@ -1,0 +1,24 @@
+﻿@model GPMS.Models.Designation
+
+<div class="container mt-5">
+    <div class="card p-4 shadow-sm" style="max-width:600px; margin:auto;">
+
+        <h4>Create Designation</h4>
+
+        <form asp-action="Create">
+
+            <div class="mb-3">
+                <label>Name</label>
+                <input asp-for="DesignationName" class="form-control" />
+            </div>
+
+            <div class="mb-3">
+                <label>Description</label>
+                <textarea asp-for="DesignationDescription" class="form-control"></textarea>
+            </div>
+
+            <button class="btn btn-primary">Create</button>
+        </form>
+
+    </div>
+</div>

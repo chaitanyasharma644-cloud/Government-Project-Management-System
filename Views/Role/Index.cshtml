@@ -40,12 +40,12 @@
             @foreach (var role in Model)
             {
                 <div class="card role">
-
+                    <div class="card-content">
                     <!-- TOP -->
-                    <div class="card-top">
-                        <h4>@role.RoleName</h4>
+                        <div class="card-top">
+                            <h4>@role.RoleName</h4>
+                        </div>
                     </div>
-
                     <!-- DESCRIPTION -->
                     <p>
                         @(string.IsNullOrEmpty(role.RoleDescription)

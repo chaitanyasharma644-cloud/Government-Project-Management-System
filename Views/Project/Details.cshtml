@@ -95,7 +95,7 @@
             <a asp-controller="Assignment"
                    asp-action="AssignEmployee"
                    asp-route-id="@Model.ProjectId"
-                   asp-route-type="module"
+                   asp-route-type="project"
                    class="btn">
                 + Add Assignment
             </a>
@@ -105,6 +105,7 @@
             <thead>
                 <tr>
                     <th>Name</th>
+                    <th>Role</th>
                     <th>Email</th>
                     <th>Username</th>
                     <th>Assigned Date</th>
@@ -119,23 +120,17 @@
                     {
                         <tr>
                             <td>@item.Employee.EmployeeName</td>
+                            <td>@item.Role?.RoleName Not assigned</td>
                             <td>@item.Employee.Email</td>
                             <td>@item.Employee.Username</td>
                             <td>@item.AssignedDate.ToString("dd MMM yyyy")</td>
 
                             <td class="action-buttons">
                                 <a asp-controller="Assignment"
-                                       asp-action="EditAssignment"
-                                       asp-route-id="@item.AssignmentId"
-                                       class="btn-edit">
-                                    Edit
-                                </a>
-
-                                <a asp-controller="Assignment"
                                        asp-action="DeleteAssignment"
                                        asp-route-id="@item.AssignmentId"
-                                       class="btn-delete">
-                                    Delete
+                                       class="btn btn-delete">
+                                    Remove
                                 </a>
                             </td>
                         </tr>
@@ -144,7 +139,7 @@
                 else
                 {
                     <tr>
-                        <td colspan="5" class="no-data">
+                        <td colspan="6" class="no-data">
                             No employees assigned
                         </td>
                     </tr>

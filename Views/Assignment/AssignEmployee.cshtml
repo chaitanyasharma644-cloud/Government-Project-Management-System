@@ -1,0 +1,140 @@
+﻿@model GPMS.ViewModels.AssignmentViewModel
+
+@{
+    ViewData["Title"] = "Assign Employee";
+}
+
+<!-- ✅ SELECT2 CSS -->
+<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+
+<div class="page-container">
+
+    <div class="form-card">
+
+        <!-- HEADER -->
+        <div class="page-header">
+            <h2 class="page-title">Assign Employee</h2>
+        </div>
+
+        <!-- FORM -->
+        <form asp-action="AssignEmployee" method="post">
+
+            @Html.AntiForgeryToken()
+
+            <!-- 🔒 HIDDEN FIELDS -->
+            <input type="hidden" asp-for="CurrentLevel" />
+
+            <!-- ✅ EMPLOYEE (SEARCHABLE DROPDOWN) -->
+            <div class="form-group">
+                <label>Select Employee</label>
+                <select asp-for="EmployeeId"
+                        asp-items="Model.Employees"
+                        class="form-control"
+                        id="employeeDropdown">
+                    <option value="">-- Search & Select Employee --</option>
+                </select>
+                <span asp-validation-for="EmployeeId" class="text-danger"></span>
+            </div>
+
+            <!-- PROJECT -->
+            <div class="form-group">
+                <label>Select Project</label>
+                <select asp-for="ProjectId"
+                        asp-items="Model.Projects"
+                        class="form-control"
+                        id="projectDropdown">
+                    <option value="">-- Select Project --</option>
+                </select>
+            </div>
+
+            <!-- MODULE -->
+            <div class="form-group">
+                <label>Select Module</label>
+                <select asp-for="ModuleId"
+                        asp-items="Model.Modules"
+                        class="form-control"
+                        id="moduleDropdown">
+                    <option value="">-- Select Module --</option>
+                </select>
+            </div>
+
+            <!-- TASK -->
+            <div class="form-group">
+                <label>Select Task</label>
+                <select asp-for="TaskId"
+                        asp-items="Model.Tasks"
+                        class="form-control"
+                        id="taskDropdown">
+                    <option value="">-- Select Task --</option>
+                </select>
+            </div>
+
+            <!-- DATE -->
+            <div class="form-group">
+                <label>Assignment Date</label>
+                <input asp-for="AssignedDate" type="date" class="form-control" />
+            </div>
+
+            <!-- ROLE -->
+            <div class="form-group">
+                <label>Select Role</label>
+                <select asp-for="RoleId"
+                        asp-items="Model.Roles"
+                        class="form-control">
+                    <option value="">-- Select Role --</option>
+                </select>
+            </div>
+
+            <!-- BUTTONS -->
+            <div class="form-group text-center">
+                <button type="submit" class="btn btn-primary">Assign</button>
+
+                <a asp-controller="Project"
+                       asp-action="Details"
+                       asp-route-id="@Model.ProjectId"
+                       class="btn">
+                    Cancel
+                </a>
+            </div>
+
+        </form>
+
+    </div>
+
+</div>
+
+<!-- ✅ jQuery (REQUIRED for Select2) -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+<!-- ✅ SELECT2 JS -->
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+
+<!-- 🔥 JAVASCRIPT -->
+<script>
+    $(document).ready(function () {
+
+    // ✅ Select2 for employee search
+    $('#employeeDropdown').select2({
+    placeholder: "Search and select employee",
+    allowClear: true,
+    width: '100%'
+    });
+
+    // 🚫 Module needs Project
+    $('#moduleDropdown').change(function () {
+    if (!$('#projectDropdown').val()) {
+    alert("Select Project first!");
+    $(this).val('').trigger('change');
+    }
+    });
+
+    // 🚫 Task needs Module
+    $('#taskDropdown').change(function () {
+    if (!$('#moduleDropdown').val()) {
+    alert("Select Module first!");
+    $(this).val('').trigger('change');
+    }
+    });
+
+    });
+</script>

@@ -11,54 +11,13 @@
         --primary: #6366f1;
     }
 
-    .page-container {
-        padding: 20px;
-    }
-
-    /* HEADER */
-    .page-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 15px;
-    }
-
-    .page-title {
-        font-size: 22px;
-        font-weight: 600;
-        color: var(--primary);
-    }
-
-    .btn-primary-custom {
-        background-color: var(--primary);
-        color: white;
-        padding: 8px 14px;
-        border-radius: 6px;
-        text-decoration: none;
-        font-size: 14px;
-        border: none;
-    }
-
-        .btn-primary-custom:hover {
-            background-color: #4f46e5;
-            color: white;
-        }
-
-    .btn-danger {
-        background-color: #ef4444;
-    }
-
-        .btn-danger:hover {
-            background-color: #dc2626;
-        }
-
-    /* SEARCH */
+/* SEARCH */
     .search-bar {
         margin-bottom: 15px;
     }
 
         .search-bar input {
-            width: 250px;
+            width: 1075px;
             padding: 8px;
             border: 1px solid #ddd;
             border-radius: 6px;
@@ -121,6 +80,7 @@
         <form method="get">
             <input type="text" name="search" placeholder="Search employee..." value="@Context.Request.Query["search"]" />
         </form>
+        <button class="btn btn-primary-custom" onclick="filterProjects()">Search</button>
     </div>
 
     <!-- TABLE -->
@@ -147,8 +107,8 @@
                         <td>@emp.Username</td>
 
                         <td class="actions">
-                            <a asp-action="Edit" asp-route-id="@emp.EmployeeId" class="btn-primary-custom">Edit</a>
-                            <a asp-action="Delete" asp-route-id="@emp.EmployeeId" class="btn-primary-custom btn-danger">Delete</a>
+                            <a asp-action="Edit" asp-route-id="@emp.EmployeeId" class="btn">Edit</a>
+                            <a asp-action="Delete" asp-route-id="@emp.EmployeeId" class="btn btn-delete">Delete</a>
                         </td>
                     </tr>
                 }

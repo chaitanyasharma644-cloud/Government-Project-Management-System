@@ -39,18 +39,18 @@
         @foreach (var m in Model)
         {
             <div class="card module">
+                <div class="card-content">
+                    <!-- TOP -->
+                    <div class="card-top">
 
-                <!-- TOP -->
-                <div class="card-top">
+                        <h3 class="module-name">@m.ModuleName</h3>
 
-                    <h3 class="module-name">@m.ModuleName</h3>
+                        <span class="status @(m.ModuleStatus == "Completed" ? "completed" : "ongoing")">
+                            @(m.ModuleStatus ?? "—")
+                        </span>
 
-                    <span class="status @(m.ModuleStatus == "Completed" ? "completed" : "ongoing")">
-                        @(m.ModuleStatus ?? "—")
-                    </span>
-
+                    </div>
                 </div>
-
                 <!-- META -->
                 <div class="card-meta">
 

@@ -28,20 +28,21 @@ public partial class Employee
     [Column("username")]
     [StringLength(50)]
     [Unicode(false)]
-    public string Username { get; set; } = null!;
+    public string? Username { get; set; }
 
     [Column("epassword")]
     [StringLength(255)]
     [Unicode(false)]
-    public string Epassword { get; set; } = null!;
+    public string? Epassword { get; set; }
 
     [Column("designation_id")]
-    public int DesignationId { get; set; }
+    public int? DesignationId { get; set; }
 
     [InverseProperty("Employee")]
     public virtual ICollection<Assignment> Assignments { get; set; } = new List<Assignment>();
 
     [ForeignKey("DesignationId")]
     [InverseProperty("Employees")]
-    public virtual Designation Designation { get; set; } = null!;
+
+    public Designation? Designation { get; set; }
 }

@@ -35,23 +35,22 @@
         @foreach (var p in Model)
         {
             <div class="card project">
+                <div class="card-content">
+                    <div class="card-top">
+                        <h3 class="project-name">@p.ProjectName</h3>
 
-                <div class="card-top">
-                    <h3 class="project-name">@p.ProjectName</h3>
-
-                    <span class="status @(p.ProjectStatus == "Completed" ? "completed" : "ongoing")">
-                        @(p.ProjectStatus ?? "—")
-                    </span>
+                        <span class="status @(p.ProjectStatus == "Completed" ? "completed" : "ongoing")">
+                            @(p.ProjectStatus ?? "—")
+                        </span>
+                    </div>
                 </div>
+                    <div class="card-meta">
+                        <span>🧩 @p.Modules.Count modules</span>
 
-                <div class="card-meta">
-                    <span>🧩 @p.Modules.Count modules</span>
+                        <span>📅 @p.ProjectStartDate.ToString("MMM dd, yyyy")</span>
 
-                    <span>📅 @p.ProjectStartDate.ToString("MMM dd, yyyy")</span>
-
-                    <span>🏁 @(p.ProjectEndDate?.ToString("MMM dd, yyyy") ?? "N/A")</span>
-                </div>
-
+                        <span>🏁 @(p.ProjectEndDate?.ToString("MMM dd, yyyy") ?? "N/A")</span>
+                    </div>
                 <hr />
 
                 <div class="card-actions">
