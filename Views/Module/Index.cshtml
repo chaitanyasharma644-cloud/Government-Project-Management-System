@@ -2,6 +2,9 @@
 
 @{
     ViewData["Title"] = "Modules";
+
+    var canCreate = ViewBag.CanCreateModule ?? false;
+    var modulePermissions = ViewBag.ModulePermissions as Dictionary<int, List<string>>;
 }
 
 <div class="page-container">
@@ -9,7 +12,11 @@
     <!-- HEADER -->
     <div class="page-header">
         <h2 class="page-title">MODULES</h2>
-        <a href="/Module/Create" class="btn">+ New Module</a>
+
+        @if (canCreate)
+        {
+            <a href="/Module/Create" class="btn">+ New Module</a>
+        }
     </div>
 
     <!-- FILTER / SEARCH -->
@@ -38,28 +45,33 @@
 
         @foreach (var m in Model)
         {
+            var perms = modulePermissions != null && modulePermissions.ContainsKey(m.ModuleId)
+                ? modulePermissions[m.ModuleId]
+                : new List<string>();
+
+            bool canView = perms.Contains("ViewModule");
+            bool canEdit = perms.Contains("EditModule");
+            bool canDelete = perms.Contains("DeleteModule");
+
             <div class="card module">
                 <div class="card-content">
+
                     <!-- TOP -->
                     <div class="card-top">
-
                         <h3 class="module-name">@m.ModuleName</h3>
 
                         <span class="status @(m.ModuleStatus == "Completed" ? "completed" : "ongoing")">
                             @(m.ModuleStatus ?? "—")
                         </span>
-
                     </div>
+
                 </div>
+
                 <!-- META -->
                 <div class="card-meta">
-
                     <span>🎯 @m.Tasks.Count tasks</span>
-
                     <span>📅 @m.ModuleStartDate?.ToString("MMM dd, yyyy")</span>
-
                     <span>🏁 @(m.ModuleEndDate?.ToString("MMM dd, yyyy") ?? "N/A")</span>
-
                 </div>
 
                 <hr />
@@ -67,20 +79,29 @@
                 <!-- ACTIONS -->
                 <div>
 
-                    <a href="/Module/Details/@m.ModuleId" class="btn">View</a>
+                    @if (canView)
+                    {
+                        <a href="/Module/Details/@m.ModuleId" class="btn">View</a>
+                    }
 
-                    <a href="/Module/Edit/@m.ModuleId" class="btn">Edit</a>
+                    @if (canEdit)
+                    {
+                        <a href="/Module/Edit/@m.ModuleId" class="btn">Edit</a>
+                    }
 
-                    <form method="post"
-                          action="/Module/Delete/@m.ModuleId"
-                          style="display:inline;"
-                          onsubmit="return confirm('Delete this module?');">
+                    @if (canDelete)
+                    {
+                        <form method="post"
+                              action="/Module/Delete/@m.ModuleId"
+                              style="display:inline;"
+                              onsubmit="return confirm('Delete this module?');">
 
-                        @Html.AntiForgeryToken()
+                            @Html.AntiForgeryToken()
 
-                        <button type="submit" class="btn btn-delete">Delete</button>
+                            <button type="submit" class="btn btn-delete">Delete</button>
 
-                    </form>
+                        </form>
+                    }
 
                 </div>
 

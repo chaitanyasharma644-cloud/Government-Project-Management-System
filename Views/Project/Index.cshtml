@@ -2,6 +2,9 @@
 
 @{
     ViewData["Title"] = "Projects";
+
+    var canCreate = ViewBag.CanCreate == true;
+    var permissions = ViewBag.ProjectPermissions as Dictionary<int, List<string>>;
 }
 
 <div class="page-container">
@@ -9,7 +12,11 @@
     <!-- HEADER -->
     <div class="page-header">
         <h2 class="page-title">PROJECTS</h2>
-        <a href="/Project/Create" class="btn">+ New Project</a>
+
+        @if (canCreate)
+        {
+            <a href="/Project/Create" class="btn">+ New Project</a>
+        }
     </div>
 
     <!-- 🔍 SEARCH BAR -->
@@ -34,6 +41,13 @@
 
         @foreach (var p in Model)
         {
+            var perms = permissions != null && permissions.ContainsKey(p.ProjectId)
+                ? permissions[p.ProjectId]
+                : new List<string>();
+
+            bool canEdit = perms.Contains("EditProject");
+            bool canDelete = perms.Contains("DeleteProject");
+
             <div class="card project">
                 <div class="card-content">
                     <div class="card-top">
@@ -44,28 +58,40 @@
                         </span>
                     </div>
                 </div>
-                    <div class="card-meta">
-                        <span>🧩 @p.Modules.Count modules</span>
 
-                        <span>📅 @p.ProjectStartDate.ToString("MMM dd, yyyy")</span>
+                <div class="card-meta">
+                    <span>🧩 @p.Modules.Count modules</span>
+                    <span>📅 @p.ProjectStartDate.ToString("MMM dd, yyyy")</span>
+                    <span>🏁 @(p.ProjectEndDate?.ToString("MMM dd, yyyy") ?? "N/A")</span>
+                </div>
 
-                        <span>🏁 @(p.ProjectEndDate?.ToString("MMM dd, yyyy") ?? "N/A")</span>
-                    </div>
                 <hr />
 
                 <div class="card-actions">
+
+                    <!-- ✅ VIEW -->
                     <a href="/Project/Details/@p.ProjectId" class="btn">View</a>
-                    <a href="/Project/Edit/@p.ProjectId" class="btn">Edit</a>
 
-                    <form method="post"
-                          action="/Project/Delete/@p.ProjectId"
-                          style="display:inline;"
-                          onsubmit="return confirm('Delete project?')">
+                    <!-- ✅ EDIT -->
+                    @if (canEdit)
+                    {
+                        <a href="/Project/Edit/@p.ProjectId" class="btn">Edit</a>
+                    }
 
-                        @Html.AntiForgeryToken()
+                    <!-- ✅ DELETE -->
+                    @if (canDelete)
+                    {
+                        <form method="post"
+                              action="/Project/Delete/@p.ProjectId"
+                              style="display:inline;"
+                              onsubmit="return confirm('Delete project?')">
 
-                        <button type="submit" class="btn btn-delete">Delete</button>
-                    </form>
+                            @Html.AntiForgeryToken()
+
+                            <button type="submit" class="btn btn-delete">Delete</button>
+                        </form>
+                    }
+
                 </div>
 
             </div>
@@ -96,7 +122,6 @@
         document.getElementById("noProjectMessage").style.display = found ? "none" : "block";
     }
 
-    // 🔥 Live search (smooth UX)
     document.getElementById("projectSearch").addEventListener("keyup", function (e) {
         filterProjects();
 

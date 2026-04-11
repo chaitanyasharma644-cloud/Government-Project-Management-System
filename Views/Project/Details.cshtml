@@ -2,11 +2,24 @@
 
 @{
     ViewData["Title"] = "Project Details";
+
+    var modulePermissions = ViewBag.ModulePermissions as Dictionary<int, List<string>>;
 }
 
 <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
 
 <div class="page-container">
+
+    <!-- 🔥 ALERTS -->
+    @if (TempData["Error"] != null)
+    {
+        <div class="alert alert-danger">@TempData["Error"]</div>
+    }
+
+    @if (TempData["Success"] != null)
+    {
+        <div class="alert alert-success">@TempData["Success"]</div>
+    }
 
     <!-- HEADER -->
     <div class="page-header">
@@ -31,9 +44,12 @@
     <div class="page-header">
         <h3>Modules</h3>
 
-        <a href="/Module/Create?projectId=@Model.ProjectId" class="btn">
-            + Add Module
-        </a>
+        @if (ViewBag.CanCreateModule == true)
+        {
+            <a href="/Module/Create?projectId=@Model.ProjectId" class="btn">
+                + Add Module
+            </a>
+        }
     </div>
 
     <!-- MODULE GRID -->
@@ -41,9 +57,16 @@
 
         @foreach (var m in Model.Modules)
         {
+            var perms = modulePermissions != null && modulePermissions.ContainsKey(m.ModuleId)
+                ? modulePermissions[m.ModuleId]
+                : new List<string>();
+
+            bool canView = perms.Contains("ViewModule");
+            bool canEdit = perms.Contains("EditModule");
+            bool canDelete = perms.Contains("DeleteModule");
+
             <div class="card module">
 
-                <!-- TOP -->
                 <div class="card-top">
                     <h4>@m.ModuleName</h4>
 
@@ -52,7 +75,6 @@
                     </span>
                 </div>
 
-                <!-- META -->
                 <div class="card-meta">
                     <span>📅 @m.ModuleStartDate?.ToString("MMM dd, yyyy")</span>
                     <span>🏁 @(m.ModuleEndDate?.ToString("MMM dd, yyyy") ?? "N/A")</span>
@@ -63,19 +85,30 @@
 
                 <!-- ACTIONS -->
                 <div>
-                    <a href="/Module/Details/@m.ModuleId" class="btn">View</a>
-                    <a href="/Module/Edit/@m.ModuleId" class="btn">Edit</a>
 
-                    <form method="post"
-                          action="/Module/Delete/@m.ModuleId"
-                          style="display:inline;"
-                          onsubmit="return confirm('Delete module?')">
+                    @if (canView)
+                    {
+                        <a href="/Module/Details/@m.ModuleId" class="btn">View</a>
+                    }
 
-                        @Html.AntiForgeryToken()
+                    @if (canEdit)
+                    {
+                        <a href="/Module/Edit/@m.ModuleId" class="btn">Edit</a>
+                    }
 
-                        <button type="submit" class="btn btn-delete">Delete</button>
+                    @if (canDelete)
+                    {
+                        <form method="post"
+                              action="/Module/Delete/@m.ModuleId"
+                              style="display:inline;"
+                              onsubmit="return confirm('Delete module? This requires deleting all tasks first.')">
 
-                    </form>
+                            @Html.AntiForgeryToken()
+
+                            <button type="submit" class="btn btn-delete">Delete</button>
+                        </form>
+                    }
+
                 </div>
 
             </div>
@@ -84,69 +117,81 @@
     </div>
 
     <!-- ============================= -->
-    <!-- ASSIGNED EMPLOYEES SECTION -->
+    <!-- ASSIGNED EMPLOYEES -->
     <!-- ============================= -->
+    @if (ViewBag.CanViewEmployee == true)
+    {
+        <div class="assignment-container">
 
-    <div class="assignment-container">
+            <div class="assignment-header">
+                <h3>Assigned Employees</h3>
 
-        <div class="assignment-header">
-            <h3>Assigned Employees</h3>
-
-            <a asp-controller="Assignment"
-                   asp-action="AssignEmployee"
-                   asp-route-id="@Model.ProjectId"
-                   asp-route-type="project"
-                   class="btn">
-                + Add Assignment
-            </a>
-        </div>
-
-        <table class="assignment-table">
-            <thead>
-                <tr>
-                    <th>Name</th>
-                    <th>Role</th>
-                    <th>Email</th>
-                    <th>Username</th>
-                    <th>Assigned Date</th>
-                    <th>Actions</th>
-                </tr>
-            </thead>
-
-            <tbody>
-                @if (Model.Assignments != null && Model.Assignments.Any())
+                @if (ViewBag.CanEditEmployee == true)
                 {
-                    foreach (var item in Model.Assignments)
+                    <a asp-controller="Assignment"
+                           asp-action="AssignEmployee"
+                           asp-route-id="@Model.ProjectId"
+                           asp-route-type="project"
+                           class="btn">
+                        + Add Assignment
+                    </a>
+                }
+            </div>
+
+            <table class="assignment-table">
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Role</th>
+                        <th>Email</th>
+                        <th>Username</th>
+                        <th>Assigned Date</th>
+
+                        @if (ViewBag.CanEditEmployee == true)
+                        {
+                            <th>Actions</th>
+                        }
+                    </tr>
+                </thead>
+
+                <tbody>
+                    @if (Model.Assignments != null && Model.Assignments.Any())
+                    {
+                        foreach (var item in Model.Assignments)
+                        {
+                            <tr>
+                                <td>@item.Employee.EmployeeName</td>
+                                <td>@(item.Role != null ? item.Role.RoleName : "Not assigned")</td>
+                                <td>@item.Employee.Email</td>
+                                <td>@item.Employee.Username</td>
+                                <td>@item.AssignedDate.ToString("dd MMM yyyy")</td>
+
+                                @if (ViewBag.CanEditEmployee == true)
+                                {
+                                    <td class="action-buttons">
+                                        <a asp-controller="Assignment"
+                                               asp-action="DeleteAssignment"
+                                               asp-route-id="@item.AssignmentId"
+                                               class="btn btn-delete">
+                                            Remove
+                                        </a>
+                                    </td>
+                                }
+                            </tr>
+                        }
+                    }
+                    else
                     {
                         <tr>
-                            <td>@item.Employee.EmployeeName</td>
-                            <td>@item.Role?.RoleName Not assigned</td>
-                            <td>@item.Employee.Email</td>
-                            <td>@item.Employee.Username</td>
-                            <td>@item.AssignedDate.ToString("dd MMM yyyy")</td>
-
-                            <td class="action-buttons">
-                                <a asp-controller="Assignment"
-                                       asp-action="DeleteAssignment"
-                                       asp-route-id="@item.AssignmentId"
-                                       class="btn btn-delete">
-                                    Remove
-                                </a>
+                            <td colspan="6" class="no-data">
+                                No employees assigned
                             </td>
                         </tr>
                     }
-                }
-                else
-                {
-                    <tr>
-                        <td colspan="6" class="no-data">
-                            No employees assigned
-                        </td>
-                    </tr>
-                }
-            </tbody>
-        </table>
+                </tbody>
+            </table>
 
-    </div>
+        </div>
+    }
 
 </div>

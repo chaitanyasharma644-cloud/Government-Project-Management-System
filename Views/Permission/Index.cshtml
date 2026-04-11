@@ -1,0 +1,70 @@
+﻿@model IEnumerable<GPMS.Models.Permission>
+
+@{
+    ViewData["Title"] = "Permissions";
+}
+
+<style>
+    .table-header {
+        background-color: #6366f1;
+        color: white;
+    }
+
+    .custom-table {
+        border-radius: 10px;
+        overflow: hidden;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+
+    .search-box {
+        width: 100%;
+        padding: 10px;
+        border-radius: 8px;
+        border: 1px solid #ccc;
+    }
+
+    .btn-primary-custom {
+        background-color: #6366f1;
+        border: none;
+        color: white;
+    }
+
+    .btn-primary-custom:hover {
+        background-color: #4f46e5;
+    }
+</style>
+
+<div class="container mt-4">
+
+    <h2 class="mb-4">PERMISSIONS</h2>
+
+    <!-- Search + Add -->
+    <div class="d-flex justify-content-between mb-3">
+        <input type="text" class="search-box me-2" placeholder="Search permission..." />
+
+        <a asp-action="Search" class="btn btn-primary-custom">
+            Search
+        </a>
+    </div>
+
+    <!-- Table -->
+    <table class="table custom-table">
+        <thead class="table-header">
+            <tr>
+                <th>Permission Name</th>
+                <th>Description</th>
+            </tr>
+        </thead>
+
+        <tbody>
+            @foreach (var item in Model)
+            {
+                <tr>
+                    <td>@item.PermsName</td>
+                    <td>@item.Description</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+
+</div>

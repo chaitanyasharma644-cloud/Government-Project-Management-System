@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc.Rendering;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 
 namespace GPMS.ViewModels
 {
@@ -15,11 +16,14 @@ namespace GPMS.ViewModels
         public int? ModuleId { get; set; }
         public int? TaskId { get; set; }
 
+        [Required(ErrorMessage = "Please select an employee")]
         public int EmployeeId { get; set; }
 
-        public int? RoleId { get; set; }   // ✅ FIXED (important)
+        // ✅ FIXED: MAKE NON-NULLABLE + REQUIRED
+        [Required(ErrorMessage = "Please select a role")]
+        public int RoleId { get; set; }
 
-        public DateOnly AssignedDate { get; set; } = DateOnly.FromDateTime(DateTime.Now);
+        public DateTime AssignedDate { get; set; } = DateTime.Now;
 
 
         // =========================
@@ -41,7 +45,7 @@ namespace GPMS.ViewModels
         public SelectList Projects { get; set; } = new SelectList(new List<object>());
         public SelectList Modules { get; set; } = new SelectList(new List<object>());
         public SelectList Tasks { get; set; } = new SelectList(new List<object>());
-        public SelectList Roles { get; set; } = new SelectList(new List<object>());  // ✅ ADDED
+        public SelectList Roles { get; set; } = new SelectList(new List<object>());
 
 
         // =========================

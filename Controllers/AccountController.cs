@@ -35,6 +35,7 @@ namespace GPMS.Controllers
         {
             var sessionCaptcha = HttpContext.Session.GetString("CaptchaCode");
 
+            // 🔒 CAPTCHA VALIDATION
             if (model.Captcha != sessionCaptcha)
             {
                 ModelState.AddModelError("", "Invalid captcha.");
@@ -43,6 +44,7 @@ namespace GPMS.Controllers
                 return View(model);
             }
 
+            // 🔍 USER VALIDATION
             var user = await _db.Employees
                 .FirstOrDefaultAsync(x => x.Username == model.Username);
 
@@ -54,11 +56,19 @@ namespace GPMS.Controllers
                 return View(model);
             }
 
-            // Create Claims for authentication cookie
+            // =========================================
+            // 🔥 CLAIMS (UPDATED FOR RBAC)
+            // =========================================
             var claims = new List<Claim>
             {
                 new Claim(ClaimTypes.Name, user.EmployeeName),
-                new Claim(ClaimTypes.NameIdentifier, user.EmployeeId.ToString())
+                new Claim(ClaimTypes.NameIdentifier, user.EmployeeId.ToString()),
+
+                // 🔥 SAFE ROLE (fallback if null)
+                new Claim(ClaimTypes.Role, user.SystemRole ?? "User"),
+
+                // 🔥 IMPORTANT → ADMIN FLAG FOR FAST CHECK
+                new Claim("IsAdmin", user.IsAdmin.ToString())
             };
 
             var claimsIdentity = new ClaimsIdentity(
@@ -71,17 +81,24 @@ namespace GPMS.Controllers
                 IsPersistent = true
             };
 
-            // Sign in user (creates authentication cookie)
+            // 🔐 SIGN IN
             await HttpContext.SignInAsync(
                 CookieAuthenticationDefaults.AuthenticationScheme,
                 new ClaimsPrincipal(claimsIdentity),
                 authProperties
             );
 
-            // Keep session if you still want it
+            // =========================================
+            // 🔥 SESSION (CLEAN + CONSISTENT)
+            // =========================================
             HttpContext.Session.SetInt32("EmployeeId", user.EmployeeId);
             HttpContext.Session.SetString("EmployeeName", user.EmployeeName);
+            HttpContext.Session.SetString("UserRole", user.SystemRole ?? "User");
+            HttpContext.Session.SetString("IsAdmin", user.IsAdmin.ToString());
 
+            // =========================================
+            // 🔥 REDIRECTION (SIMPLIFIED)
+            // =========================================
             return RedirectToAction("Index", "Dashboard");
         }
 
@@ -98,7 +115,7 @@ namespace GPMS.Controllers
 
         private string GenerateCaptcha()
         {
-            const string chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+            const string chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789abcdefghjklmnpqrstuvwxyz";
             var random = new Random();
             return new string(Enumerable.Repeat(chars, 5)
                 .Select(s => s[random.Next(s.Length)]).ToArray());

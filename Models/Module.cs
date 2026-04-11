@@ -17,7 +17,7 @@ namespace GPMS.Models
         [Required(ErrorMessage = "Project is required")]
         [Display(Name = "Project Name")]
         [Column("project_id")]
-        public int? ProjectId { get; set; }
+        public int ProjectId { get; set; }
 
         // ✅ MODULE NAME
         [Required(ErrorMessage = "Module name is required")]

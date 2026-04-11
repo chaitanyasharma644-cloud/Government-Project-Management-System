@@ -1,6 +1,10 @@
 ﻿@model IEnumerable<GPMS.Models.Task>
 
-<link rel="stylesheet" href="~/css/project.css" />
+<link rel="stylesheet" href="~/css/site.css" />
+
+@{
+    var taskPermissions = ViewBag.TaskPermissions as Dictionary<int, List<string>>;
+}
 
 <div class="page-container">
 
@@ -13,7 +17,6 @@
     <!-- FILTER BAR -->
     <form method="get" class="search-bar">
 
-        <!-- Project -->
         <select name="projectId" class="form-control">
             <option value="">All Projects</option>
             @foreach (var p in ViewBag.Projects)
@@ -29,7 +32,6 @@
             }
         </select>
 
-        <!-- Module -->
         <select name="moduleId" class="form-control">
             <option value="">All Modules</option>
             @foreach (var m in ViewBag.Modules)
@@ -45,7 +47,6 @@
             }
         </select>
 
-        <!-- Search -->
         <input type="text"
                name="search"
                class="form-control"
@@ -81,6 +82,14 @@
                 {
                     @foreach (var item in Model)
                     {
+                        var perms = taskPermissions != null && taskPermissions.ContainsKey(item.TaskId)
+                            ? taskPermissions[item.TaskId]
+                            : new List<string>();
+
+                        bool canView = perms.Contains("ViewTask");
+                        bool canEdit = perms.Contains("EditTask");
+                        bool canDelete = perms.Contains("DeleteTask");
+
                         var statusClass = string.IsNullOrEmpty(item.TaskStatus)
                             ? ""
                             : item.TaskStatus.ToLower();
@@ -89,35 +98,39 @@
                             <td>@item.TaskName</td>
                             <td>@item.TaskDescription</td>
 
-                            <!-- STATUS -->
                             <td>
                                 <span class="status @statusClass">
                                     @(item.TaskStatus ?? "N/A")
                                 </span>
                             </td>
 
-                            <!-- START DATE -->
-                            <td>
-                                @(item.TaskStartDate?.ToString("dd MMM yyyy") ?? "-")
-                            </td>
+                            <td>@(item.TaskStartDate?.ToString("dd MMM yyyy") ?? "-")</td>
+                            <td>@(item.TaskEndDate?.ToString("dd MMM yyyy") ?? "-")</td>
 
-                            <!-- END DATE -->
-                            <td>
-                                @(item.TaskEndDate?.ToString("dd MMM yyyy") ?? "-")
-                            </td>
-
-                            <!-- ACTIONS -->
                             <td>
                                 <div class="card-actions">
-                                    <a asp-action="Details" asp-route-id="@item.TaskId" class="btn">View</a>
-                                    <a asp-action="Edit" asp-route-id="@item.TaskId" class="btn">Edit</a>
 
-                                    <form asp-action="Delete"
-                                          asp-route-id="@item.TaskId"
-                                          method="post"
-                                          style="display:inline;">
-                                        <button type="submit" class="btn btn-delete">Delete</button>
-                                    </form>
+                                    @if (canView)
+                                    {
+                                        <a asp-action="Details" asp-route-id="@item.TaskId" class="btn">View</a>
+                                    }
+
+                                    @if (canEdit)
+                                    {
+                                        <a asp-action="Edit" asp-route-id="@item.TaskId" class="btn">Edit</a>
+                                    }
+
+                                    @if (canDelete)
+                                    {
+                                        <form asp-action="Delete"
+                                              asp-route-id="@item.TaskId"
+                                              method="post"
+                                              style="display:inline;">
+
+                                            <button type="submit" class="btn btn-delete">Delete</button>
+                                        </form>
+                                    }
+
                                 </div>
                             </td>
                         </tr>

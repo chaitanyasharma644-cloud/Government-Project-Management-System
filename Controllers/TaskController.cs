@@ -1,10 +1,12 @@
 ﻿using GPMS.Data;
+using GPMS.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
+using System.Security.Claims;
 
-// ALIAS (IMPORTANT FIX)
+// ALIAS
 using TaskModel = GPMS.Models.Task;
 
 namespace GPMS.Controllers
@@ -13,92 +15,134 @@ namespace GPMS.Controllers
     public class TaskController : Controller
     {
         private readonly AppDbContext _context;
+        private readonly PermissionService _permissionService;
 
-        public TaskController(AppDbContext context)
+        public TaskController(AppDbContext context, PermissionService permissionService)
         {
             _context = context;
+            _permissionService = permissionService;
         }
 
-        // ==============================
-        // TASK LIST WITH FILTERING
-        // ==============================
-        public async System.Threading.Tasks.Task<IActionResult> Index(int? projectId, int? moduleId, string search)
+        private int GetEmployeeId()
         {
-            var tasks = _context.Tasks
+            var claim = User.FindFirst(ClaimTypes.NameIdentifier);
+            if (claim == null)
+                throw new Exception("User not logged in");
+
+            return int.Parse(claim.Value);
+        }
+
+        // =========================================
+        // TASK LIST (🔥 UPDATED)
+        // =========================================
+        public async Task<IActionResult> Index(int? projectId, int? moduleId, string search)
+        {
+            var employeeId = GetEmployeeId();
+
+            var employee = await _context.Employees
+                .FirstOrDefaultAsync(e => e.EmployeeId == employeeId);
+
+            var allTasks = await _context.Tasks
                 .Include(t => t.Module)
-                .ThenInclude(m => m.Project)
-                .AsQueryable();
+                    .ThenInclude(m => m.Project)
+                .ToListAsync();
 
-            //  Filter by Project
+            var filteredTasks = new List<TaskModel>();
+            var taskPermissions = new Dictionary<int, List<string>>(); // ✅ ADDED
+
+            foreach (var t in allTasks)
+            {
+                var projId = t.Module.ProjectId;
+
+                bool isAssigned = await _context.Assignments
+                    .AnyAsync(a => a.EmployeeId == employeeId && a.ProjectId == projId);
+
+                bool canView = await _permissionService.HasPermission(employeeId, projId, "ViewTask");
+
+                if (employee.IsAdmin || (isAssigned && canView))
+                {
+                    filteredTasks.Add(t);
+
+                    // ✅ ADD PER-TASK PERMISSIONS
+                    var perms = await _permissionService.GetPermissions(employeeId, projId);
+                    taskPermissions[t.TaskId] = perms;
+                }
+            }
+
+            // 🔍 Filters
             if (projectId.HasValue)
-            {
-                tasks = tasks.Where(t => t.Module.ProjectId == projectId);
-            }
+                filteredTasks = filteredTasks.Where(t => t.Module.ProjectId == projectId).ToList();
 
-            //  Filter by Module
             if (moduleId.HasValue)
-            {
-                tasks = tasks.Where(t => t.ModuleId == moduleId);
-            }
+                filteredTasks = filteredTasks.Where(t => t.ModuleId == moduleId).ToList();
 
-            // 🔍 Search by Task Name
             if (!string.IsNullOrEmpty(search))
-            {
-                tasks = tasks.Where(t => t.TaskName.Contains(search));
-            }
+                filteredTasks = filteredTasks.Where(t => t.TaskName.Contains(search)).ToList();
 
-            // ✅ Dropdowns (keep selected values)
-            ViewBag.Projects = new SelectList(
-                _context.Projects,
-                "ProjectId",
-                "ProjectName",
-                projectId
-            );
+            ViewBag.TaskPermissions = taskPermissions; // ✅ ADDED
 
-            ViewBag.Modules = new SelectList(
-                _context.Modules,
-                "ModuleId",
-                "ModuleName",
-                moduleId
-            );
+            ViewBag.Projects = new SelectList(_context.Projects, "ProjectId", "ProjectName", projectId);
+            ViewBag.Modules = new SelectList(_context.Modules, "ModuleId", "ModuleName", moduleId);
 
-            return View(await tasks.ToListAsync());
+            return View(filteredTasks);
         }
 
-        // ==============================
-        // TASK DETAILS
-        // ==============================
-        public async System.Threading.Tasks.Task<IActionResult> Details(int id)
+        // =========================================
+        // TASK DETAILS (🔥 UPDATED)
+        // =========================================
+        public async Task<IActionResult> Details(int id)
         {
+            var employeeId = GetEmployeeId();
+
             var task = await _context.Tasks
                 .Include(t => t.Module)
                     .ThenInclude(m => m.Project)
-
-                // 🔥 ADD THIS (VERY IMPORTANT)
                 .Include(t => t.Assignments)
                     .ThenInclude(a => a.Employee)
-
                 .FirstOrDefaultAsync(t => t.TaskId == id);
 
             if (task == null)
                 return NotFound();
 
+            var projectId = task.Module.ProjectId;
+
+            var employee = await _context.Employees
+                .FirstOrDefaultAsync(e => e.EmployeeId == employeeId);
+
+            bool isAssigned = await _context.Assignments
+                .AnyAsync(a => a.EmployeeId == employeeId && a.ProjectId == projectId);
+
+            bool canView = await _permissionService.HasPermission(employeeId, projectId, "ViewTask");
+
+            if (!employee.IsAdmin && (!isAssigned || !canView))
+                return Forbid();
+
+            // 🔥 UI permissions
+            ViewBag.CanEditTask = await _permissionService.HasPermission(employeeId, projectId, "EditTask"); // ✅ FIXED NAME
+            ViewBag.CanDeleteTask = await _permissionService.HasPermission(employeeId, projectId, "DeleteTask"); // ✅ FIXED NAME
+            ViewBag.CanCreateTask = await _permissionService.HasPermission(employeeId, projectId, "CreateTask"); // ✅ FIXED NAME
+
+            // ✅ ADD EMPLOYEE PERMISSIONS (required by view)
+            ViewBag.CanViewEmployee = await _permissionService.HasPermission(employeeId, projectId, "ViewAssignment");
+            ViewBag.CanEditEmployee = await _permissionService.HasPermission(employeeId, projectId, "EditAssignment");
+
             return View(task);
         }
 
-        // ==============================
+        // =========================================
         // CREATE TASK (GET)
-        // ==============================
-        public IActionResult Create()
+        // =========================================
+        public async Task<IActionResult> Create(int? projectId)
         {
-            ViewBag.ProjectList = new SelectList(
-                _context.Projects,
-                "ProjectId",
-                "ProjectName"
-            );
+            var employeeId = GetEmployeeId();
+
+            if (projectId == null || !await _permissionService.HasPermission(employeeId, projectId, "CreateTask"))
+                return Forbid();
+
+            ViewBag.ProjectList = new SelectList(_context.Projects, "ProjectId", "ProjectName", projectId);
 
             ViewBag.ModuleList = new SelectList(
-                _context.Modules,
+                _context.Modules.Where(m => m.ProjectId == projectId),
                 "ModuleId",
                 "ModuleName"
             );
@@ -106,117 +150,148 @@ namespace GPMS.Controllers
             return View();
         }
 
-        // ==============================
+        // =========================================
         // CREATE TASK (POST)
-        // ==============================
+        // =========================================
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(TaskModel task)
         {
-            // 1. Check if the model is actually coming in
-            if (task == null) return Content("Task object is null. Binding failed.");
+            var employeeId = GetEmployeeId();
 
-            // 2. Identify EXACTLY which field is causing the failure
-            if (!ModelState.IsValid)
-            {
-                var errors = ModelState.SelectMany(x => x.Value.Errors)
-                                       .Select(x => x.ErrorMessage).ToList();
+            var module = await _context.Modules.FindAsync(task.ModuleId);
 
-                // This will stop the app and show you the errors in the browser
-                return Content("Validation Failed: " + string.Join(" | ", errors));
-            }
+            if (module == null)
+                return NotFound();
 
-            try
+            if (!await _permissionService.HasPermission(employeeId, module.ProjectId, "CreateTask"))
+                return Forbid();
+
+            if (ModelState.IsValid)
             {
                 _context.Tasks.Add(task);
                 await _context.SaveChangesAsync();
-                return RedirectToAction(nameof(Index));
+
+                TempData["Success"] = "✅ Task created successfully.";
+                return RedirectToAction(nameof(Index), new { projectId = module.ProjectId });
             }
-            catch (Exception ex)
-            {
-                // Capture the InnerException (this is where DB errors like Foreign Keys hide)
-                var innerMsg = ex.InnerException != null ? ex.InnerException.Message : "";
-                return Content($"Database Error: {ex.Message} | Inner: {innerMsg}");
-            }
+
+            ViewBag.ProjectList = new SelectList(_context.Projects, "ProjectId", "ProjectName");
+            ViewBag.ModuleList = new SelectList(_context.Modules, "ModuleId", "ModuleName");
+
+            return View(task);
         }
 
-        // ==============================
+        // =========================================
         // EDIT TASK (GET)
-        // ==============================
-        public async System.Threading.Tasks.Task<IActionResult> Edit(int id)
+        // =========================================
+        public async Task<IActionResult> Edit(int id)
         {
+            var employeeId = GetEmployeeId();
+
             var task = await _context.Tasks
                 .Include(t => t.Module)
-                .ThenInclude(m => m.Project) // 🔥 IMPORTANT FIX
+                    .ThenInclude(m => m.Project)
                 .FirstOrDefaultAsync(t => t.TaskId == id);
 
             if (task == null)
                 return NotFound();
 
-            // For UI (readonly display)
-            task.ProjectId = task.Module?.ProjectId;
+            var projectId = task.Module.ProjectId;
 
-            ViewBag.ProjectList = new SelectList(_context.Projects, "ProjectId", "ProjectName", task.ProjectId);
+            if (!await _permissionService.HasPermission(employeeId, projectId, "EditTask"))
+                return Forbid();
+
+            ViewBag.ProjectList = new SelectList(_context.Projects, "ProjectId", "ProjectName", projectId);
+            ViewBag.ModuleList = new SelectList(
+                _context.Modules.Where(m => m.ProjectId == projectId),
+                "ModuleId",
+                "ModuleName",
+                task.ModuleId
+            );
+
+            return View(task);
+        }
+
+        // =========================================
+        // EDIT TASK (POST)
+        // =========================================
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Edit(TaskModel task)
+        {
+            var employeeId = GetEmployeeId();
+
+            var module = await _context.Modules.FindAsync(task.ModuleId);
+
+            if (module == null)
+                return NotFound();
+
+            if (!await _permissionService.HasPermission(employeeId, module.ProjectId, "EditTask"))
+                return Forbid();
+
+            if (ModelState.IsValid)
+            {
+                var existingTask = await _context.Tasks.FindAsync(task.TaskId);
+
+                if (existingTask == null)
+                    return NotFound();
+
+                existingTask.TaskName = task.TaskName;
+                existingTask.TaskDescription = task.TaskDescription;
+                existingTask.TaskStatus = task.TaskStatus;
+                existingTask.TaskEndDate = task.TaskEndDate;
+                existingTask.ModuleId = task.ModuleId;
+
+                await _context.SaveChangesAsync();
+
+                TempData["Success"] = "✅ Task updated successfully.";
+                return RedirectToAction(nameof(Index), new { projectId = module.ProjectId });
+            }
+
+            ViewBag.ProjectList = new SelectList(_context.Projects, "ProjectId", "ProjectName", module.ProjectId);
             ViewBag.ModuleList = new SelectList(_context.Modules, "ModuleId", "ModuleName", task.ModuleId);
 
             return View(task);
         }
 
-        // ==============================
-        // EDIT TASK (POST)
-        // ==============================
+        // =========================================
+        // DELETE TASK
+        // =========================================
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async System.Threading.Tasks.Task<IActionResult> Edit(TaskModel task)
+        public async Task<IActionResult> Delete(int id)
         {
-            if (!ModelState.IsValid)
-            {
-                ViewBag.ProjectList = new SelectList(_context.Projects, "ProjectId", "ProjectName", task.ProjectId);
-                ViewBag.ModuleList = new SelectList(_context.Modules, "ModuleId", "ModuleName", task.ModuleId);
+            var employeeId = GetEmployeeId();
 
-                return View(task);
-            }
+            var task = await _context.Tasks
+                .Include(t => t.Module)
+                .FirstOrDefaultAsync(t => t.TaskId == id);
 
-            var existingTask = await _context.Tasks.FindAsync(task.TaskId);
-
-            if (existingTask == null)
+            if (task == null)
                 return NotFound();
 
-            // ✅ UPDATE ONLY ALLOWED FIELDS
-            existingTask.TaskName = task.TaskName;
-            existingTask.TaskDescription = task.TaskDescription;
-            existingTask.TaskStatus = task.TaskStatus;
-            existingTask.TaskEndDate = task.TaskEndDate;
+            var projectId = task.Module.ProjectId;
 
-            // ❌ DO NOT UPDATE THESE (readonly in UI)
-            // existingTask.ModuleId = task.ModuleId;
-            // existingTask.TaskStartDate = task.TaskStartDate;
+            if (!await _permissionService.HasPermission(employeeId, projectId, "DeleteTask"))
+                return Forbid();
 
+            var assignments = _context.Assignments
+                .Where(a => a.TaskId == id);
+
+            _context.Assignments.RemoveRange(assignments);
+
+            _context.Tasks.Remove(task);
             await _context.SaveChangesAsync();
 
-            return RedirectToAction(nameof(Index));
+            TempData["Success"] = "✅ Task deleted successfully.";
+
+            return RedirectToAction(nameof(Index), new { projectId });
         }
 
-        // ==============================
-        // DELETE TASK
-        // ==============================
-        [HttpPost]
-        public async System.Threading.Tasks.Task<IActionResult> Delete(int id)
-        {
-            var task = await _context.Tasks.FindAsync(id);
-
-            if (task != null)
-            {
-                _context.Tasks.Remove(task);
-                await _context.SaveChangesAsync();
-            }
-
-            return RedirectToAction(nameof(Index));
-        }
-
-        // ==============================
-        // AJAX: GET MODULES BY PROJECT
-        // ==============================
+        // =========================================
+        // AJAX: MODULES BY PROJECT
+        // =========================================
         public JsonResult GetModulesByProject(int projectId)
         {
             var modules = _context.Modules

@@ -12,6 +12,10 @@ public partial class Assignment
     [Column("assignment_id")]
     public int AssignmentId { get; set; }
 
+    // =========================
+    // 🔹 LEVEL REFERENCES
+    // =========================
+
     [Column("project_id")]
     public int? ProjectId { get; set; }
 
@@ -21,6 +25,10 @@ public partial class Assignment
     [Column("task_id")]
     public int? TaskId { get; set; }
 
+    // =========================
+    // 🔹 CORE FIELDS
+    // =========================
+
     [Required]
     [Column("employee_id")]
     public int EmployeeId { get; set; }
@@ -29,15 +37,17 @@ public partial class Assignment
     [Column("assigned_date")]
     public DateOnly AssignedDate { get; set; }
 
+    // ✅ ROLE IS NOW IMPORTANT (MAKE REQUIRED)
+    [Required(ErrorMessage = "Role is required")]
     [Column("role_id")]
-    public int? RoleId { get; set; }
+    public int RoleId { get; set; }
+
+    // =========================
+    // 🔹 NAVIGATION PROPERTIES
+    // =========================
 
     [ForeignKey(nameof(RoleId))]
-    public virtual Role? Role { get; set; }
-
-    // =========================
-    // NAVIGATION PROPERTIES
-    // =========================
+    public virtual Role Role { get; set; } = null!;
 
     [ForeignKey(nameof(EmployeeId))]
     [InverseProperty("Assignments")]
@@ -58,9 +68,8 @@ public partial class Assignment
     [InverseProperty("Assignment")]
     public virtual ICollection<Document> Documents { get; set; } = new List<Document>();
 
-
     // =========================
-    //  HELPER PROPERTY 
+    // 🔹 HELPER PROPERTY
     // =========================
 
     [NotMapped]
@@ -72,6 +81,29 @@ public partial class Assignment
             if (ModuleId != null) return "Module";
             if (ProjectId != null) return "Project";
             return "Unknown";
+        }
+    }
+
+    // =========================
+    // 🔹 HELPER PROPERTY (IMPORTANT)
+    // =========================
+
+    // 👉 ALWAYS GET PROJECT ID (even if module/task)
+    [NotMapped]
+    public int? EffectiveProjectId
+    {
+        get
+        {
+            if (ProjectId != null)
+                return ProjectId;
+
+            if (Module != null)
+                return Module.ProjectId;
+
+            if (Task != null)
+                return Task.Module?.ProjectId;
+
+            return null;
         }
     }
 }

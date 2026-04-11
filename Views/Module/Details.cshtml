@@ -3,7 +3,23 @@
 
 <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
 
+@{
+    var canCreateTask = ViewBag.CanCreateTask == true;
+    var taskPermissions = ViewBag.TaskPermissions as Dictionary<int, List<string>>;
+}
+
 <div class="page-container">
+
+    <!-- 🔥 ALERTS -->
+    @if (TempData["Error"] != null)
+    {
+        <div class="alert alert-danger">@TempData["Error"]</div>
+    }
+
+    @if (TempData["Success"] != null)
+    {
+        <div class="alert alert-success">@TempData["Success"]</div>
+    }
 
     <!-- MODULE HEADER -->
     <div class="page-header">
@@ -12,12 +28,15 @@
             <p class="text-muted">@Model.Details</p>
         </div>
 
-        <a asp-controller="Task"
-               asp-action="Create"
-               asp-route-moduleId="@Model.ModuleId"
-               class="btn">
-            + Add Task
-        </a>
+        @if (canCreateTask)
+        {
+            <a asp-controller="Task"
+                   asp-action="Create"
+                   asp-route-moduleId="@Model.ModuleId"
+                   class="btn">
+                + Add Task
+            </a>
+        }
     </div>
 
     <!-- MODULE INFO -->
@@ -38,6 +57,7 @@
                     <th>Status</th>
                     <th>Start Date</th>
                     <th>End Date</th>
+
                     <th>Actions</th>
                 </tr>
             </thead>
@@ -55,6 +75,14 @@
                 {
                     @foreach (var item in Model.Tasks)
                     {
+                        var perms = taskPermissions != null && taskPermissions.ContainsKey(item.TaskId)
+                            ? taskPermissions[item.TaskId]
+                            : new List<string>();
+
+                        bool canViewTask = perms.Contains("ViewTask");
+                        bool canEditTask = perms.Contains("EditTask");
+                        bool canDeleteTask = perms.Contains("DeleteTask");
+
                         var statusClass = string.IsNullOrEmpty(item.TaskStatus)
                             ? ""
                             : item.TaskStatus.ToLower();
@@ -68,50 +96,54 @@
                                     : item.TaskDescription)
                             </td>
 
-                            <!-- STATUS -->
                             <td>
                                 <span class="status @statusClass">
                                     @(item.TaskStatus ?? "N/A")
                                 </span>
                             </td>
 
-                            <!-- START DATE -->
-                            <td>
-                                @(item.TaskStartDate?.ToString("dd MMM yyyy") ?? "-")
-                            </td>
+                            <td>@(item.TaskStartDate?.ToString("dd MMM yyyy") ?? "-")</td>
+                            <td>@(item.TaskEndDate?.ToString("dd MMM yyyy") ?? "-")</td>
 
-                            <!-- END DATE -->
-                            <td>
-                                @(item.TaskEndDate?.ToString("dd MMM yyyy") ?? "-")
-                            </td>
-
-                            <!-- ACTIONS -->
                             <td>
                                 <div class="card-actions">
 
-                                    <a asp-controller="Task"
-                                           asp-action="Details"
-                                           asp-route-id="@item.TaskId"
-                                           class="btn">
-                                        View
-                                    </a>
+                                    @if (canViewTask)
+                                    {
+                                        <a asp-controller="Task"
+                                               asp-action="Details"
+                                               asp-route-id="@item.TaskId"
+                                               class="btn">
+                                            View
+                                        </a>
+                                    }
 
-                                    <a asp-controller="Task"
-                                           asp-action="Edit"
-                                           asp-route-id="@item.TaskId"
-                                           class="btn">
-                                        Edit
-                                    </a>
+                                    @if (canEditTask)
+                                    {
+                                        <a asp-controller="Task"
+                                               asp-action="Edit"
+                                               asp-route-id="@item.TaskId"
+                                               class="btn">
+                                            Edit
+                                        </a>
+                                    }
 
-                                    <form asp-controller="Task"
-                                          asp-action="Delete"
-                                          asp-route-id="@item.TaskId"
-                                          method="post"
-                                          style="display:inline;">
-                                        <button type="submit" class="btn btn-delete">
-                                            Delete
-                                        </button>
-                                    </form>
+                                    @if (canDeleteTask)
+                                    {
+                                        <form asp-controller="Task"
+                                              asp-action="Delete"
+                                              asp-route-id="@item.TaskId"
+                                              method="post"
+                                              style="display:inline;"
+                                              onsubmit="return confirm('Delete task? This will remove all assignments first.')">
+
+                                            @Html.AntiForgeryToken()
+
+                                            <button type="submit" class="btn btn-delete">
+                                                Delete
+                                            </button>
+                                        </form>
+                                    }
 
                                 </div>
                             </td>
@@ -124,69 +156,81 @@
     </div>
 
     <!-- ============================= -->
-    <!-- ASSIGNED EMPLOYEES SECTION -->
+    <!-- ASSIGNED EMPLOYEES -->
     <!-- ============================= -->
+    @if (ViewBag.CanViewEmployee == true)
+    {
+        <div class="assignment-container">
 
-    <div class="assignment-container">
+            <div class="assignment-header">
+                <h3>Assigned Employees</h3>
 
-        <div class="assignment-header">
-            <h3>Assigned Employees</h3>
-
-            <a asp-controller="Assignment"
-                   asp-action="AssignEmployee"
-                   asp-route-id="@Model.ModuleId"
-                   asp-route-type="module"
-                   class="btn">
-                + Add Assignment
-            </a>
-        </div>
-
-        <table class="assignment-table">
-            <thead>
-                <tr>
-                    <th>Name</th>
-                    <th>Role</th>
-                    <th>Email</th>
-                    <th>Username</th>
-                    <th>Assigned Date</th>
-                    <th>Actions</th>
-                </tr>
-            </thead>
-
-            <tbody>
-                @if (Model.Assignments != null && Model.Assignments.Any())
+                @if (ViewBag.CanEditEmployee == true)
                 {
-                    foreach (var item in Model.Assignments)
+                    <a asp-controller="Assignment"
+                           asp-action="AssignEmployee"
+                           asp-route-id="@Model.ModuleId"
+                           asp-route-type="module"
+                           class="btn">
+                        + Add Assignment
+                    </a>
+                }
+            </div>
+
+            <table class="assignment-table">
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Role</th>
+                        <th>Email</th>
+                        <th>Username</th>
+                        <th>Assigned Date</th>
+
+                        @if (ViewBag.CanEditEmployee == true)
+                        {
+                            <th>Actions</th>
+                        }
+                    </tr>
+                </thead>
+
+                <tbody>
+                    @if (Model.Assignments != null && Model.Assignments.Any())
+                    {
+                        foreach (var item in Model.Assignments)
+                        {
+                            <tr>
+                                <td>@item.Employee.EmployeeName</td>
+                                <td>@(item.Role != null ? item.Role.RoleName : "Not assigned")</td>
+                                <td>@item.Employee.Email</td>
+                                <td>@item.Employee.Username</td>
+                                <td>@item.AssignedDate.ToString("dd MMM yyyy")</td>
+
+                                @if (ViewBag.CanEditEmployee == true)
+                                {
+                                    <td class="action-buttons">
+                                        <a asp-controller="Assignment"
+                                               asp-action="DeleteAssignment"
+                                               asp-route-id="@item.AssignmentId"
+                                               class="btn btn-delete">
+                                            Remove
+                                        </a>
+                                    </td>
+                                }
+                            </tr>
+                        }
+                    }
+                    else
                     {
                         <tr>
-                            <td>@item.Employee.EmployeeName</td>
-                            <td>@item.Role?.RoleName Not assigned</td>
-                            <td>@item.Employee.Email</td>
-                            <td>@item.Employee.Username</td>
-                            <td>@item.AssignedDate.ToString("dd MMM yyyy")</td>
-
-                            <td class="action-buttons">
-                                <a asp-controller="Assignment"
-                                       asp-action="DeleteAssignment"
-                                       asp-route-id="@item.AssignmentId"
-                                       class="btn btn-delete">
-                                    Remove
-                                </a>
+                            <td colspan="6" class="no-data">
+                                No employees assigned
                             </td>
                         </tr>
                     }
-                }
-                else
-                {
-                    <tr>
-                        <td colspan="6" class="no-data">
-                            No employees assigned
-                        </td>
-                    </tr>
-                }
-            </tbody>
-        </table>
+                </tbody>
+            </table>
 
-    </div>
+        </div>
+    }
 
 </div>

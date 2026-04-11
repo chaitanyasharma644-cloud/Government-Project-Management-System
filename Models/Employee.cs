@@ -15,6 +15,8 @@ public partial class Employee
     [Column("employee_id")]
     public int EmployeeId { get; set; }
 
+    public bool IsAdmin { get; set; } = false;
+
     [Column("employee_name")]
     [StringLength(100)]
     [Unicode(false)]
@@ -38,11 +40,20 @@ public partial class Employee
     [Column("designation_id")]
     public int? DesignationId { get; set; }
 
+    [Required]
+    [Column("system_role")]
+    [StringLength(20)]
+    [Unicode(false)]
+    public string SystemRole { get; set; } = "Employee"; // Default
+
+    // =========================================
+    // NAVIGATION PROPERTIES
+    // =========================================
+
     [InverseProperty("Employee")]
     public virtual ICollection<Assignment> Assignments { get; set; } = new List<Assignment>();
 
     [ForeignKey("DesignationId")]
     [InverseProperty("Employees")]
-
     public Designation? Designation { get; set; }
 }

@@ -2,29 +2,30 @@
 
 @{
     ViewData["Title"] = "Assign Employee";
+
+    // ✅ FIX: move Razor logic here
+    var disableModule = Model.CurrentLevel == "project" ? "disabled" : "";
+    var disableTask = Model.CurrentLevel != "task" ? "disabled" : "";
 }
 
-<!-- ✅ SELECT2 CSS -->
 <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
 
 <div class="page-container">
 
     <div class="form-card">
 
-        <!-- HEADER -->
         <div class="page-header">
             <h2 class="page-title">Assign Employee</h2>
         </div>
 
-        <!-- FORM -->
         <form asp-action="AssignEmployee" method="post">
 
             @Html.AntiForgeryToken()
 
-            <!-- 🔒 HIDDEN FIELDS -->
+            <!-- 🔒 HIDDEN -->
             <input type="hidden" asp-for="CurrentLevel" />
 
-            <!-- ✅ EMPLOYEE (SEARCHABLE DROPDOWN) -->
+            <!-- EMPLOYEE -->
             <div class="form-group">
                 <label>Select Employee</label>
                 <select asp-for="EmployeeId"
@@ -45,6 +46,7 @@
                         id="projectDropdown">
                     <option value="">-- Select Project --</option>
                 </select>
+                <span asp-validation-for="ProjectId" class="text-danger"></span>
             </div>
 
             <!-- MODULE -->
@@ -53,7 +55,8 @@
                 <select asp-for="ModuleId"
                         asp-items="Model.Modules"
                         class="form-control"
-                        id="moduleDropdown">
+                        id="moduleDropdown"
+                        >
                     <option value="">-- Select Module --</option>
                 </select>
             </div>
@@ -64,7 +67,8 @@
                 <select asp-for="TaskId"
                         asp-items="Model.Tasks"
                         class="form-control"
-                        id="taskDropdown">
+                        id="taskDropdown"
+                        >
                     <option value="">-- Select Task --</option>
                 </select>
             </div>
@@ -73,16 +77,19 @@
             <div class="form-group">
                 <label>Assignment Date</label>
                 <input asp-for="AssignedDate" type="date" class="form-control" />
+                <span asp-validation-for="AssignedDate" class="text-danger"></span>
             </div>
 
             <!-- ROLE -->
             <div class="form-group">
                 <label>Select Role</label>
                 <select asp-for="RoleId"
-                        asp-items="Model.Roles"
-                        class="form-control">
+                        asp-items="Model.Roles ?? new SelectList(Enumerable.Empty<SelectListItem>())"
+                        class="form-control"
+                        id="roleDropdown">
                     <option value="">-- Select Role --</option>
                 </select>
+                <span asp-validation-for="RoleId" class="text-danger"></span>
             </div>
 
             <!-- BUTTONS -->
@@ -90,9 +97,9 @@
                 <button type="submit" class="btn btn-primary">Assign</button>
 
                 <a asp-controller="Project"
-                       asp-action="Details"
-                       asp-route-id="@Model.ProjectId"
-                       class="btn">
+                   asp-action="Details"
+                   asp-route-id="@Model.ProjectId"
+                   class="btn btn-delete">
                     Cancel
                 </a>
             </div>
@@ -103,38 +110,55 @@
 
 </div>
 
-<!-- ✅ jQuery (REQUIRED for Select2) -->
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-
-<!-- ✅ SELECT2 JS -->
 <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 
-<!-- 🔥 JAVASCRIPT -->
 <script>
-    $(document).ready(function () {
+$(document).ready(function () {
 
-    // ✅ Select2 for employee search
+    // ✅ Select2
     $('#employeeDropdown').select2({
-    placeholder: "Search and select employee",
-    allowClear: true,
-    width: '100%'
+        placeholder: "Search and select employee",
+        allowClear: true,
+        width: '100%'
     });
 
-    // 🚫 Module needs Project
+    // 🔥 LEVEL BASED CONTROL
+    const level = '@Model.CurrentLevel';
+
+    if (level === "project") {
+        $('#moduleDropdown').prop('disabled', true);
+        $('#taskDropdown').prop('disabled', true);
+    }
+
+    if (level === "module") {
+        $('#moduleDropdown').prop('disabled', false);
+        $('#taskDropdown').prop('disabled', true);
+    }
+
+    if (level === "task") {
+        $('#moduleDropdown').prop('disabled', false);
+        $('#taskDropdown').prop('disabled', false);
+    }
+
+    // ✅ Enable Module after Project
+    $('#projectDropdown').change(function () {
+        if ($(this).val()) {
+            $('#moduleDropdown').prop('disabled', false);
+        } else {
+            $('#moduleDropdown').prop('disabled', true).val('');
+            $('#taskDropdown').prop('disabled', true).val('');
+        }
+    });
+
+    // ✅ Enable Task after Module
     $('#moduleDropdown').change(function () {
-    if (!$('#projectDropdown').val()) {
-    alert("Select Project first!");
-    $(this).val('').trigger('change');
-    }
+        if ($(this).val()) {
+            $('#taskDropdown').prop('disabled', false);
+        } else {
+            $('#taskDropdown').prop('disabled', true).val('');
+        }
     });
 
-    // 🚫 Task needs Module
-    $('#taskDropdown').change(function () {
-    if (!$('#moduleDropdown').val()) {
-    alert("Select Module first!");
-    $(this).val('').trigger('change');
-    }
-    });
-
-    });
+});
 </script>

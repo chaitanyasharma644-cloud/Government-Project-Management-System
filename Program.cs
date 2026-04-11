@@ -1,4 +1,5 @@
 using GPMS.Data;
+using GPMS.Services; // ✅ IMPORTANT (for PermissionService)
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Authentication.Cookies;
 
@@ -15,15 +16,19 @@ builder.Services.AddControllersWithViews();
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
+// 🔥 REGISTER PERMISSION SERVICE (CRITICAL)
+builder.Services.AddScoped<PermissionService>();
+
 // Authentication (Cookie)
 builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
     .AddCookie(options =>
     {
         options.LoginPath = "/Account/Login";
 
-        // 🔥 IMPORTANT (fix HTTPS cookie warning)
+        // 🔐 Secure cookies
         options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
         options.Cookie.SameSite = SameSiteMode.Lax;
+        options.Cookie.HttpOnly = true;
     });
 
 // Session
@@ -33,7 +38,7 @@ builder.Services.AddSession(options =>
     options.Cookie.HttpOnly = true;
     options.Cookie.IsEssential = true;
 
-    // 🔥 Secure session cookies
+    // 🔐 Secure session cookies
     options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
 });
 
@@ -53,7 +58,7 @@ if (!app.Environment.IsDevelopment())
 // 🔐 HTTPS
 app.UseHttpsRedirection();
 
-// Static files (css/js/images)
+// Static files
 app.UseStaticFiles();
 
 app.UseRouting();
@@ -61,7 +66,7 @@ app.UseRouting();
 // Session
 app.UseSession();
 
-// Authentication & Authorization
+// 🔐 Auth (ORDER MATTERS)
 app.UseAuthentication();
 app.UseAuthorization();
 
