@@ -4,52 +4,84 @@
     ViewData["Title"] = "Permissions";
 }
 
+<link rel="stylesheet" href="~/css/site.css" />
+
 <style>
-    .table-header {
-        background-color: #6366f1;
-        color: white;
+    :root {
+        --primary: #6366f1;
     }
 
-    .custom-table {
+    /* SEARCH */
+    .search-bar {
+        margin-bottom: 15px;
+    }
+
+        .search-bar input {
+            width: 1075px;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+        }
+
+    /* TABLE */
+    .permission-table {
+        width: 100%;
+        border-collapse: collapse;
+        background: white;
         border-radius: 10px;
         overflow: hidden;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
     }
 
-    .search-box {
-        width: 100%;
-        padding: 10px;
-        border-radius: 8px;
-        border: 1px solid #ccc;
-    }
+        .permission-table thead {
+            background-color: var(--primary);
+            color: white;
+        }
 
-    .btn-primary-custom {
-        background-color: #6366f1;
-        border: none;
-        color: white;
-    }
+        .permission-table th {
+            padding: 14px;
+            text-align: left;
+            font-weight: 500;
+        }
 
-    .btn-primary-custom:hover {
-        background-color: #4f46e5;
+        .permission-table td {
+            padding: 14px;
+        }
+
+        .permission-table tbody tr {
+            border-bottom: 1px solid #eee;
+            transition: 0.2s;
+        }
+
+            .permission-table tbody tr:hover {
+                background-color: #f5f7ff;
+            }
+
+    .no-data {
+        text-align: center;
+        padding: 20px;
+        color: #888;
     }
 </style>
 
-<div class="container mt-4">
+<div class="page-container">
 
-    <h2 class="mb-4">PERMISSIONS</h2>
-
-    <!-- Search + Add -->
-    <div class="d-flex justify-content-between mb-3">
-        <input type="text" class="search-box me-2" placeholder="Search permission..." />
-
-        <a asp-action="Search" class="btn btn-primary-custom">
-            Search
-        </a>
+    <!-- HEADER -->
+    <div class="page-header">
+        <h2 class="page-title">PERMISSIONS</h2>
+        <a asp-action="Create" class="btn">+ Add Permission</a>
     </div>
 
-    <!-- Table -->
-    <table class="table custom-table">
-        <thead class="table-header">
+    <!-- SEARCH -->
+    <div class="search-bar">
+        <form method="get">
+            <input type="text" name="search" placeholder="Search permission..." value="@Context.Request.Query["search"]" />
+        </form>
+        <button class="btn btn-primary-custom" onclick="this.previousElementSibling.submit()">Search</button>
+    </div>
+
+    <!-- TABLE -->
+    <table class="permission-table">
+        <thead>
             <tr>
                 <th>Permission Name</th>
                 <th>Description</th>
@@ -57,11 +89,20 @@
         </thead>
 
         <tbody>
-            @foreach (var item in Model)
+            @if (Model != null && Model.Any())
+            {
+                foreach (var p in Model)
+                {
+                    <tr>
+                        <td>@p.PermsName</td>
+                        <td>@p.Description</td>
+                    </tr>
+                }
+            }
+            else
             {
                 <tr>
-                    <td>@item.PermsName</td>
-                    <td>@item.Description</td>
+                    <td colspan="2" class="no-data">No permissions found</td>
                 </tr>
             }
         </tbody>

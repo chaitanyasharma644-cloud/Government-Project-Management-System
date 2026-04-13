@@ -1,4 +1,5 @@
 ﻿using GPMS.Data;
+using GPMS.Models;
 using GPMS.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -136,16 +137,49 @@ namespace GPMS.Controllers
         {
             var employeeId = GetEmployeeId();
 
-            if (projectId == null || !await _permissionService.HasPermission(employeeId, projectId, "CreateTask"))
-                return Forbid();
+            var employee = await _context.Employees
+                .FirstOrDefaultAsync(e => e.EmployeeId == employeeId);
 
-            ViewBag.ProjectList = new SelectList(_context.Projects, "ProjectId", "ProjectName", projectId);
+            // If projectId is provided, check permission for that specific project
+            if (projectId.HasValue)
+            {
+                bool canCreate = await _permissionService.HasPermission(employeeId, projectId, "CreateTask");
+                if (!employee.IsAdmin && !canCreate)
+                    return Forbid();
+            }
 
-            ViewBag.ModuleList = new SelectList(
-                _context.Modules.Where(m => m.ProjectId == projectId),
-                "ModuleId",
-                "ModuleName"
-            );
+            // Build project list: Admin = all, Employee = assigned only
+            List<Project> projects;
+
+            if (employee != null && employee.IsAdmin)
+            {
+                projects = await _context.Projects.ToListAsync();
+            }
+            else
+            {
+                var assignedProjectIds = await _context.Assignments
+                    .Where(a => a.EmployeeId == employeeId)
+                    .Select(a => a.ProjectId)
+                    .Distinct()
+                    .ToListAsync();
+
+                projects = await _context.Projects
+                    .Where(p => assignedProjectIds.Contains(p.ProjectId))
+                    .ToListAsync();
+            }
+
+            ViewBag.ProjectList = new SelectList(projects, "ProjectId", "ProjectName", projectId);
+
+            // Pre-load modules if projectId is known
+            if (projectId.HasValue)
+            {
+                ViewBag.ModuleList = new SelectList(
+                    _context.Modules.Where(m => m.ProjectId == projectId),
+                    "ModuleId",
+                    "ModuleName"
+                );
+                ViewBag.SelectedProjectId = projectId;
+            }
 
             return View();
         }
@@ -176,8 +210,13 @@ namespace GPMS.Controllers
                 return RedirectToAction(nameof(Index), new { projectId = module.ProjectId });
             }
 
-            ViewBag.ProjectList = new SelectList(_context.Projects, "ProjectId", "ProjectName");
-            ViewBag.ModuleList = new SelectList(_context.Modules, "ModuleId", "ModuleName");
+            // Re-populate on failure
+            ViewBag.ProjectList = new SelectList(_context.Projects, "ProjectId", "ProjectName", module.ProjectId);
+            ViewBag.ModuleList = new SelectList(
+                _context.Modules.Where(m => m.ProjectId == module.ProjectId),
+                "ModuleId", "ModuleName", task.ModuleId
+            );
+            ViewBag.SelectedProjectId = module.ProjectId;
 
             return View(task);
         }

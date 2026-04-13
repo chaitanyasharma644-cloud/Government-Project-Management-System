@@ -1,7 +1,8 @@
 ﻿using GPMS.Data;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using System.Linq;
+using Microsoft.EntityFrameworkCore;
+using System.Security.Claims;
 
 namespace GPMS.Controllers
 {
@@ -15,79 +16,83 @@ namespace GPMS.Controllers
             _context = context;
         }
 
-        public IActionResult Index()
+        public async Task<IActionResult> Index()
         {
-            // 🔑 Get logged-in employee ID
-            var employeeId = int.Parse(User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier).Value);
+            // 🔑 Get logged-in employee ID safely
+            var claim = User.FindFirst(ClaimTypes.NameIdentifier);
 
-            // 🔐 Check role
-            if (User.IsInRole("Admin"))
+            if (claim == null)
+                return RedirectToAction("Login", "Account");
+
+            var employeeId = int.Parse(claim.Value);
+
+            // 🔍 Get employee
+            var employee = await _context.Employees
+                .FirstOrDefaultAsync(e => e.EmployeeId == employeeId);
+
+            if (employee == null)
+                return RedirectToAction("Login", "Account");
+
+            // =====================================================
+            // 👑 ADMIN DASHBOARD
+            // =====================================================
+            if (employee.IsAdmin)
             {
-                // =============================
-                // 👑 ADMIN DASHBOARD
-                // =============================
-                ViewBag.Projects = _context.Projects.Count();
-                ViewBag.Modules = _context.Modules.Count();
-                ViewBag.Tasks = _context.Tasks.Count();
-                ViewBag.Assignments = _context.Assignments.Count();
-                ViewBag.Employees = _context.Employees.Count();
+                ViewBag.IsAdmin = true;
 
-                ViewBag.Completed = _context.Projects
-                    .Where(p => p.ProjectStatus == "Completed")
-                    .Count();
+                ViewBag.ProjectCount = await _context.Projects.CountAsync();
+                ViewBag.ModuleCount = await _context.Modules.CountAsync();
+                ViewBag.TaskCount = await _context.Tasks.CountAsync();
+                ViewBag.EmployeeCount = await _context.Employees.CountAsync();
 
-                ViewBag.Ongoing = _context.Projects
-                    .Where(p => p.ProjectStatus == "Ongoing")
-                    .Count();
+                ViewBag.Completed = await _context.Tasks
+                    .CountAsync(t => t.TaskStatus == "Completed");
+
+                ViewBag.Ongoing = await _context.Tasks
+                    .CountAsync(t => t.TaskStatus == "Ongoing");
             }
             else
             {
-                // =============================
+                // =====================================================
                 // 👤 EMPLOYEE DASHBOARD
-                // =============================
+                // =====================================================
+                ViewBag.IsAdmin = false;
 
                 // 🔹 PROJECTS (assigned)
-                var projectIds = _context.Assignments
+                var projectIds = await _context.Assignments
                     .Where(a => a.EmployeeId == employeeId && a.ProjectId != null)
                     .Select(a => a.ProjectId)
                     .Distinct()
-                    .ToList();
-
-                ViewBag.Projects = projectIds.Count;
+                    .ToListAsync();
 
                 // 🔹 MODULES (assigned)
-                var moduleIds = _context.Assignments
+                var moduleIds = await _context.Assignments
                     .Where(a => a.EmployeeId == employeeId && a.ModuleId != null)
                     .Select(a => a.ModuleId)
                     .Distinct()
-                    .ToList();
-
-                ViewBag.Modules = moduleIds.Count;
+                    .ToListAsync();
 
                 // 🔹 TASKS (assigned)
-                var taskIds = _context.Assignments
+                var taskIds = await _context.Assignments
                     .Where(a => a.EmployeeId == employeeId && a.TaskId != null)
                     .Select(a => a.TaskId)
                     .Distinct()
-                    .ToList();
+                    .ToListAsync();
 
-                ViewBag.Tasks = taskIds.Count;
+                ViewBag.ProjectCount = projectIds.Count;
+                ViewBag.ModuleCount = moduleIds.Count;
+                ViewBag.TaskCount = taskIds.Count;
 
-                // 🔹 ASSIGNMENTS
-                ViewBag.Assignments = _context.Assignments
-                    .Count(a => a.EmployeeId == employeeId);
+                // 🔹 TASK STATUS (based on assigned projects)
+                var tasks = _context.Tasks
+                    .Include(t => t.Module)
+                    .Where(t => projectIds.Contains(t.Module.ProjectId));
 
-                // 🔹 EMPLOYEES (hide or keep 0)
-                ViewBag.Employees = 0;
+                ViewBag.Ongoing = await tasks
+                    .CountAsync(t => t.TaskStatus == "Ongoing");
 
-                // 🔹 PROJECT STATUS (only assigned projects)
-                ViewBag.Completed = _context.Projects
-                    .Where(p => projectIds.Contains(p.ProjectId) && p.ProjectStatus == "Completed")
-                    .Count();
-
-                ViewBag.Ongoing = _context.Projects
-                    .Where(p => projectIds.Contains(p.ProjectId) && p.ProjectStatus == "Ongoing")
-                    .Count();
+                ViewBag.Completed = await tasks
+                    .CountAsync(t => t.TaskStatus == "Completed");
             }
 
             return View();

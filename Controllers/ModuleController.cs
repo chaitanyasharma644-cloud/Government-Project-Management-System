@@ -142,7 +142,31 @@ namespace GPMS.Controllers
             if (!await _permissionService.HasPermission(employeeId, null, "CreateModule"))
                 return Forbid();
 
-            ViewBag.Projects = new SelectList(_context.Projects, "ProjectId", "ProjectName");
+            var employee = await _context.Employees
+                .FirstOrDefaultAsync(e => e.EmployeeId == employeeId);
+
+            List<Project> projects;
+
+            if (employee != null && employee.IsAdmin)
+            {
+                // Admin sees all projects
+                projects = await _context.Projects.ToListAsync();
+            }
+            else
+            {
+                // Employee sees only their assigned projects
+                var assignedProjectIds = await _context.Assignments
+                    .Where(a => a.EmployeeId == employeeId)
+                    .Select(a => a.ProjectId)
+                    .Distinct()
+                    .ToListAsync();
+
+                projects = await _context.Projects
+                    .Where(p => assignedProjectIds.Contains(p.ProjectId))
+                    .ToListAsync();
+            }
+
+            ViewBag.ProjectList = new SelectList(projects, "ProjectId", "ProjectName");
 
             return View();
         }
@@ -171,7 +195,8 @@ namespace GPMS.Controllers
                 return RedirectToAction(nameof(Index));
             }
 
-            ViewBag.Projects = new SelectList(_context.Projects, "ProjectId", "ProjectName");
+            // Re-populate dropdown on validation failure
+            ViewBag.ProjectList = new SelectList(_context.Projects, "ProjectId", "ProjectName");
             return View(module);
         }
 

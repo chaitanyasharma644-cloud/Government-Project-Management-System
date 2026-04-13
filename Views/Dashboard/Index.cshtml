@@ -8,23 +8,34 @@
 
     <!-- 🔥 TITLE -->
     <h2 class="mb-4">
-        @(User.IsInRole("Admin") ? "Admin Dashboard" : "My Dashboard")
+        @(ViewBag.IsAdmin ? "Admin Dashboard" : "My Dashboard")
     </h2>
 
-    <!-- STATS CARDS -->
     <div class="stats-grid">
 
         <div class="stat-card project">
             <div class="icon">📁</div>
-            <div class="number">@ViewBag.Projects</div>
+            <div class="number">@ViewBag.ProjectCount</div>
             <div class="label">PROJECTS</div>
         </div>
 
+        @if (ViewBag.IsAdmin)
+{
         <div class="stat-card employees">
             <div class="icon">👥</div>
-            <div class="number">@ViewBag.Employees</div>
+            <div class="number">@ViewBag.EmployeeCount</div>
             <div class="label">EMPLOYEES</div>
         </div>
+}
+
+else
+{
+            <div class="stat-card modules">
+                <div class="icon">📦</div>
+                <div class="number">@ViewBag.ModuleCount</div>
+                <div class="label">MODULES</div>
+            </div>
+}
 
         <div class="stat-card ongoing">
             <div class="icon">▶</div>
@@ -40,9 +51,13 @@
 
     </div>
 
-    <!-- 👑 ADMIN ONLY: QUICK ACTIONS -->
-    @if (User.IsInRole("Admin"))
+    <!-- ========================= -->
+    <!-- 👑 ADMIN DASHBOARD -->
+    <!-- ========================= -->
+    @if (ViewBag.IsAdmin == true)
     {
+
+        <!-- 👑 ADMIN QUICK ACTIONS -->
         <div class="panel quick-actions">
 
             <h3>Quick Actions</h3>
