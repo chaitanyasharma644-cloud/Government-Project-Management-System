@@ -17,14 +17,14 @@
             <!-- PROJECT NAME -->
             <div class="form-group">
                 <label>Project Name</label>
-                <input asp-for="ProjectName" class="form-control" />
+                <input asp-for="ProjectName" class="form-control" placeholder="Enter project name" />
                 <span asp-validation-for="ProjectName" class="text-danger"></span>
             </div>
 
             <!-- DETAILS -->
             <div class="form-group">
                 <label>Details</label>
-                <textarea asp-for="ProjectDetails" class="form-control"></textarea>
+                <textarea asp-for="ProjectDetails" class="form-control" placeholder="Enter project details"></textarea>
                 <span asp-validation-for="ProjectDetails" class="text-danger"></span>
             </div>
 
@@ -32,9 +32,9 @@
             <div class="form-group">
                 <label>Status</label>
                 <select asp-for="ProjectStatus" class="form-control">
-                    <option value="">-- Select --</option>
-                    <option>Ongoing</option>
-                    <option>Completed</option>
+                    <option value="">-- Select Status --</option>
+                    <option value="Ongoing">Ongoing</option>
+                    <option value="Completed">Completed</option>
                 </select>
                 <span asp-validation-for="ProjectStatus" class="text-danger"></span>
             </div>

@@ -315,15 +315,21 @@ namespace GPMS.Controllers
             if (!await _permissionService.HasPermission(employeeId, projectId, "DeleteTask"))
                 return Forbid();
 
-            var assignments = _context.Assignments
-                .Where(a => a.TaskId == id);
+            // 🔥 CHECK ASSIGNMENTS (FIX)
+            int assignmentCount = await _context.Assignments
+                .CountAsync(a => a.TaskId == id);
 
-            _context.Assignments.RemoveRange(assignments);
+            if (assignmentCount > 0)
+            {
+                TempData["Error"] = $"Cannot delete task. It has {assignmentCount} assignments. Remove them first.";
+                return RedirectToAction("Details", new { id });
+            }
 
+            // ✅ SAFE DELETE
             _context.Tasks.Remove(task);
             await _context.SaveChangesAsync();
 
-            TempData["Success"] = "✅ Task deleted successfully.";
+            TempData["Success"] = "Task deleted successfully.";
 
             return RedirectToAction(nameof(Index), new { projectId });
         }

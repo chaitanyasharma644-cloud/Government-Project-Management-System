@@ -240,7 +240,7 @@ namespace GPMS.Controllers
                 _context.Update(module);
                 await _context.SaveChangesAsync();
 
-                TempData["Success"] = "✅ Module updated successfully.";
+                TempData["Success"] = "Module updated successfully.";
                 return RedirectToAction(nameof(Index));
             }
 
@@ -268,16 +268,28 @@ namespace GPMS.Controllers
             if (!await _permissionService.HasPermission(employeeId, module.ProjectId, "DeleteModule"))
                 return Forbid();
 
+            // 🔥 CHECK TASKS
             if (module.Tasks.Any())
             {
-                TempData["Error"] = "⚠️ Please delete all tasks before deleting this module.";
+                TempData["Error"] = $"Cannot delete module. It has {module.Tasks.Count} tasks. Delete them first.";
                 return RedirectToAction("Details", "Project", new { id = module.ProjectId });
             }
 
+            // 🔥 CHECK ASSIGNMENTS (OPTIMIZED)
+            int assignmentCount = await _context.Assignments
+                .CountAsync(a => a.ModuleId == id);
+
+            if (assignmentCount > 0)
+            {
+                TempData["Error"] = $"Cannot delete module. It has {assignmentCount} assignments. Remove them first.";
+                return RedirectToAction("Details", "Project", new { id = module.ProjectId });
+            }
+
+            // ✅ SAFE DELETE
             _context.Modules.Remove(module);
             await _context.SaveChangesAsync();
 
-            TempData["Success"] = "✅ Module deleted successfully.";
+            TempData["Success"] = "Module deleted successfully.";
 
             return RedirectToAction("Details", "Project", new { id = module.ProjectId });
         }

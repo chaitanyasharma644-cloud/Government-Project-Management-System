@@ -16,7 +16,6 @@ namespace GPMS.Data
 
         public virtual DbSet<Assignment> Assignments { get; set; }
         public virtual DbSet<Designation> Designations { get; set; }
-        public virtual DbSet<Document> Documents { get; set; }
         public virtual DbSet<Employee> Employees { get; set; }
         public virtual DbSet<Module> Modules { get; set; }
         public virtual DbSet<Permission> Permissions { get; set; }
@@ -96,19 +95,7 @@ namespace GPMS.Data
                 .WithMany(m => m.Tasks)
                 .HasForeignKey(t => t.ModuleId)
                 .OnDelete(DeleteBehavior.Cascade);
-
-
-            // =========================
-            // 🔹 DOCUMENT → ASSIGNMENT
-            // =========================
-
-            modelBuilder.Entity<Document>()
-                .HasOne(d => d.Assignment)
-                .WithMany(a => a.Documents)
-                .HasForeignKey(d => d.AssignmentId)
-                .OnDelete(DeleteBehavior.Cascade);
-
-
+            
             // =========================
             // 🔹 ROLE HIERARCHY
             // =========================

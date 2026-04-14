@@ -231,30 +231,40 @@ namespace GPMS.Controllers
 
             var project = await _context.Projects
                 .Include(p => p.Modules)
-                    .ThenInclude(m => m.Tasks)
                 .FirstOrDefaultAsync(p => p.ProjectId == id);
 
             if (project == null)
                 return NotFound();
 
-            // 🔥 CHECK MODULES
+            // 🔥 STEP 1: CHECK MODULES FIRST (MAIN BLOCKER)
             if (project.Modules.Any())
             {
-                TempData["Error"] = "⚠️ Please delete all modules before deleting this project.";
+                int moduleCount = project.Modules.Count;
+
+                TempData["Error"] = $"Cannot delete project. It has {moduleCount} modules. Delete modules first.";
                 return RedirectToAction("Details", new { id });
             }
 
-            // 🔥 REMOVE ASSIGNMENTS
-            var assignments = _context.Assignments
-                .Where(a => a.ProjectId == id);
+            // 🔥 STEP 2: CHECK ASSIGNMENTS (DIRECT OR INDIRECT)
+            bool hasAssignments = await _context.Assignments
+                .AnyAsync(a => a.ProjectId == id
+                    || a.Module.ProjectId == id);
 
-            _context.Assignments.RemoveRange(assignments);
+            if (hasAssignments)
+            {
+                int assignmentCount = await _context.Assignments
+                    .CountAsync(a => a.ProjectId == id
+                        || a.Module.ProjectId == id);
 
-            // 🔥 DELETE PROJECT
+                TempData["Error"] = $"Cannot delete project. It has {assignmentCount} assignments. Remove them first.";
+                return RedirectToAction("Details", new { id });
+            }
+
+            // ✅ SAFE DELETE
             _context.Projects.Remove(project);
             await _context.SaveChangesAsync();
 
-            TempData["Success"] = "✅ Project deleted successfully.";
+            TempData["Success"] = "Project deleted successfully.";
 
             return RedirectToAction(nameof(Index));
         }
