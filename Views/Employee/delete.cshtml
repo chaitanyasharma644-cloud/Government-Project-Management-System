@@ -1,0 +1,48 @@
+﻿@model GPMS.Models.Employee
+
+<div style="max-width:500px; margin:60px auto;">
+
+    <!-- CARD -->
+    <div style="background:white; padding:25px; border-radius:12px;
+        box-shadow:0 6px 18px rgba(0,0,0,0.1); text-align:center;">
+
+        <!-- TITLE -->
+        <h2 style="color:black; margin-bottom:15px;">
+            Delete Employee
+        </h2>
+
+        <!-- MESSAGE -->
+        <p style="color:black; margin-bottom:20px;">
+            Are you sure you want to delete this employee?
+        </p>
+
+        
+
+        <!-- FORM -->
+        <form asp-action="Delete" method="post">
+            <input type="hidden" asp-for="EmployeeId" />
+
+            <!-- DELETE BUTTON -->
+            <button type="submit"
+                    style="border:1px solid #ef4444; color:#ef4444;
+                padding:8px 20px; border-radius:6px;
+                background:white; cursor:pointer;"
+                    onmouseover="this.style.background='#ef4444'; this.style.color='white';"
+                    onmouseout="this.style.background='white'; this.style.color='#ef4444';">
+                Delete
+            </button>
+
+            <!-- CANCEL BUTTON -->
+            <a asp-action="Index"
+                   style="margin-left:12px; text-decoration:none;
+                border:1px solid #3b82f6; color:#3b82f6;
+                padding:8px 20px; border-radius:6px;"
+                   onmouseover="this.style.background='#3b82f6'; this.style.color='white';"
+                   onmouseout="this.style.background='white'; this.style.color='#3b82f6';">
+                Cancel
+            </a>
+        </form>
+
+    </div>
+
+</div>

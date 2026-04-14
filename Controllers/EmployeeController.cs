@@ -39,7 +39,6 @@ namespace GPMS.Controllers
         {
             var employeeId = GetEmployeeId();
 
-            // 🔒 VIEW PERMISSION
             if (!await _permissionService.HasPermission(employeeId, null, "ViewEmployee"))
                 return Forbid();
 
@@ -52,11 +51,9 @@ namespace GPMS.Controllers
                 employees = employees.Where(e =>
                     e.EmployeeName.Contains(search) ||
                     e.Email.Contains(search) ||
-                    e.Username.Contains(search)
-                );
+                    e.Username.Contains(search));
             }
 
-            // 🔥 UI Permissions
             ViewBag.CanCreate = await _permissionService.HasPermission(employeeId, null, "CreateEmployee");
             ViewBag.CanEdit = await _permissionService.HasPermission(employeeId, null, "EditEmployee");
             ViewBag.CanDelete = await _permissionService.HasPermission(employeeId, null, "DeleteEmployee");
@@ -65,7 +62,7 @@ namespace GPMS.Controllers
         }
 
         // =========================================
-        // CREATE (GET)
+        // CREATE
         // =========================================
         public async Task<IActionResult> Create()
         {
@@ -84,9 +81,6 @@ namespace GPMS.Controllers
             return View();
         }
 
-        // =========================================
-        // CREATE (POST)
-        // =========================================
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(Employee employee)
@@ -103,17 +97,8 @@ namespace GPMS.Controllers
                 _context.Add(employee);
                 await _context.SaveChangesAsync();
 
-                TempData["Success"] = "✅ Employee created successfully.";
-
                 return RedirectToAction(nameof(Index));
             }
-
-            ViewBag.DesignationList = _context.Designations
-                .Select(d => new SelectListItem
-                {
-                    Value = d.DesignationId.ToString(),
-                    Text = d.DesignationName
-                }).ToList();
 
             return View(employee);
         }
@@ -133,13 +118,18 @@ namespace GPMS.Controllers
             if (emp == null)
                 return NotFound();
 
-            ViewBag.Designations = await _context.Designations.ToListAsync();
+            ViewBag.DesignationList = _context.Designations
+                .Select(d => new SelectListItem
+                {
+                    Value = d.DesignationId.ToString(),
+                    Text = d.DesignationName
+                }).ToList();
 
             return View(emp);
         }
 
         // =========================================
-        // EDIT (POST)
+        // EDIT (POST) 🔥 FIXED
         // =========================================
         [HttpPost]
         [ValidateAntiForgeryToken]
@@ -155,20 +145,22 @@ namespace GPMS.Controllers
 
             if (ModelState.IsValid)
             {
-                try
-                {
-                    _context.Update(emp);
-                    await _context.SaveChangesAsync();
+                var existing = await _context.Employees.FindAsync(id);
 
-                    TempData["Success"] = "✅ Employee updated successfully.";
-                }
-                catch (DbUpdateConcurrencyException)
-                {
-                    if (!_context.Employees.Any(e => e.EmployeeId == emp.EmployeeId))
-                        return NotFound();
-                    else
-                        throw;
-                }
+                if (existing == null)
+                    return NotFound();
+
+                // ✅ Update only safe fields
+                existing.EmployeeName = emp.EmployeeName;
+                existing.Email = emp.Email;
+                existing.Username = emp.Username;
+                existing.DesignationId = emp.DesignationId;
+                existing.IsAdmin = emp.IsAdmin;
+                existing.SystemRole = emp.SystemRole;
+
+                // ❗ Password remains unchanged
+
+                await _context.SaveChangesAsync();
 
                 return RedirectToAction(nameof(Index));
             }
@@ -177,7 +169,7 @@ namespace GPMS.Controllers
         }
 
         // =========================================
-        // DELETE (GET)
+        // DELETE
         // =========================================
         public async Task<IActionResult> Delete(int id)
         {
@@ -196,26 +188,15 @@ namespace GPMS.Controllers
             return View(emp);
         }
 
-        // =========================================
-        // DELETE (POST)
-        // =========================================
         [HttpPost, ActionName("Delete")]
-        [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            var employeeId = GetEmployeeId();
-
-            if (!await _permissionService.HasPermission(employeeId, null, "DeleteEmployee"))
-                return Forbid();
-
             var emp = await _context.Employees.FindAsync(id);
 
             if (emp != null)
             {
                 _context.Employees.Remove(emp);
                 await _context.SaveChangesAsync();
-
-                TempData["Success"] = "✅ Employee deleted successfully.";
             }
 
             return RedirectToAction(nameof(Index));
