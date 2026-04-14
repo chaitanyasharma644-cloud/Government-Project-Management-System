@@ -75,12 +75,9 @@
         <a asp-action="Create" class="btn">+ Add Employee</a>
     </div>
 
-    <!-- SEARCH -->
+    <!-- 🔥 LIVE SEARCH -->
     <div class="search-bar">
-        <form method="get">
-            <input type="text" name="search" placeholder="Search employee..." value="@Context.Request.Query["search"]" />
-        </form>
-        <button class="btn btn-primary-custom" onclick="filterProjects()">Search</button>
+        <input type="text" id="employeeSearch" placeholder="Search employee..." />
     </div>
 
     <!-- TABLE -->
@@ -95,13 +92,13 @@
             </tr>
         </thead>
 
-        <tbody>
+        <tbody id="employeeTableBody">
             @if (Model != null && Model.Any())
             {
                 foreach (var emp in Model)
                 {
                     <tr>
-                        <td>@emp.EmployeeName</td>
+                        <td class="emp-name">@emp.EmployeeName</td>
                         <td>@emp.Designation?.DesignationName</td>
                         <td>@emp.Email</td>
                         <td>@emp.Username</td>
@@ -115,7 +112,7 @@
             }
             else
             {
-                <tr>
+                <tr id="noDataRow">
                     <td colspan="5" class="no-data">No employees found</td>
                 </tr>
             }
@@ -123,3 +120,30 @@
     </table>
 
 </div>
+
+<!-- 🔥 LIVE SEARCH SCRIPT -->
+<script>
+
+    function filterEmployees() {
+
+        let input = document.getElementById("employeeSearch").value.toLowerCase();
+        let rows = document.querySelectorAll("#employeeTableBody tr");
+
+        rows.forEach(row => {
+
+            let nameCell = row.querySelector(".emp-name");
+
+            if (!nameCell) return;
+
+            let name = nameCell.innerText.toLowerCase();
+
+            row.style.display = name.includes(input) ? "" : "none";
+
+        });
+
+    }
+
+    // 🔥 LIVE typing
+    document.getElementById("employeeSearch").addEventListener("keyup", filterEmployees);
+
+</script>

@@ -15,9 +15,9 @@
     </div>
 
     <!-- FILTER BAR -->
-    <form method="get" class="search-bar">
+    <div class="search-bar">
 
-        <select name="projectId" class="form-control">
+        <select id="projectId" class="form-control">
             <option value="">All Projects</option>
             @foreach (var p in ViewBag.Projects)
             {
@@ -32,7 +32,7 @@
             }
         </select>
 
-        <select name="moduleId" class="form-control">
+        <select id="moduleId" class="form-control">
             <option value="">All Modules</option>
             @foreach (var m in ViewBag.Modules)
             {
@@ -47,14 +47,10 @@
             }
         </select>
 
-        <input type="text"
-               name="search"
-               class="form-control"
-               value="@Context.Request.Query["search"]"
-               placeholder="Search task..." />
+        <input type="text" id="taskSearch" class="form-control" placeholder="Search task..." />
 
-        <button type="submit" class="btn btn-primary-custom">Search</button>
-    </form>
+        
+    </div>
 
     <!-- TABLE -->
     <div class="card">
@@ -94,8 +90,8 @@
                             ? ""
                             : item.TaskStatus.ToLower();
 
-                        <tr>
-                            <td>@item.TaskName</td>
+                        <tr data-project="@item.Module.ProjectId" data-module="@item.ModuleId">
+                            <td class="task-name">@item.TaskName</td>
                             <td>@item.TaskDescription</td>
 
                             <td>
@@ -142,3 +138,35 @@
     </div>
 
 </div>
+
+<script>
+
+    function filterTasks() {
+
+        let search = document.getElementById("taskSearch").value.toLowerCase();
+        let project = document.getElementById("projectId").value;
+        let module = document.getElementById("moduleId").value;
+
+        let rows = document.querySelectorAll(".task-table tbody tr");
+
+        rows.forEach(row => {
+
+            let name = row.querySelector(".task-name").innerText.toLowerCase();
+            let rowProject = row.getAttribute("data-project");
+            let rowModule = row.getAttribute("data-module");
+
+            let matchSearch = name.includes(search);
+            let matchProject = !project || rowProject === project;
+            let matchModule = !module || rowModule === module;
+
+            row.style.display = (matchSearch && matchProject && matchModule) ? "" : "none";
+
+        });
+    }
+
+    // live events
+    document.getElementById("taskSearch").addEventListener("keyup", filterTasks);
+    document.getElementById("projectId").addEventListener("change", filterTasks);
+    document.getElementById("moduleId").addEventListener("change", filterTasks);
+
+</script>

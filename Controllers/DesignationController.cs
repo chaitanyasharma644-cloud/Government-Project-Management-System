@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using GPMS.Data;
 using GPMS.Models;
+using System.Linq;
 
 public class DesignationController : Controller
 {
@@ -11,7 +12,7 @@ public class DesignationController : Controller
         _context = context;
     }
 
-    // LIST + SEARCH
+    // ================= LIST + SEARCH =================
     public IActionResult Index(string search)
     {
         var data = _context.Designations.AsQueryable();
@@ -25,67 +26,50 @@ public class DesignationController : Controller
     }
 
     // ================= CREATE =================
-
     public IActionResult Create()
     {
         return View();
     }
 
     [HttpPost]
+    [ValidateAntiForgeryToken]
     public IActionResult Create(Designation designation)
     {
         if (ModelState.IsValid)
         {
             _context.Designations.Add(designation);
             _context.SaveChanges();
+            TempData["Success"] = "Designation created successfully";
             return RedirectToAction("Index");
         }
         return View(designation);
     }
 
-    // ================= EDIT =================
+    // ================= DELETE =================
 
-    public IActionResult Edit(int id)
-    {
-        var data = _context.Designations.Find(id);
-        if (data == null) return NotFound();
-        return View(data);
-    }
-
+    // POST: Delete
     [HttpPost]
-    public IActionResult Edit(Designation designation)
-    {
-        if (ModelState.IsValid)
-        {
-            _context.Designations.Update(designation);
-            _context.SaveChanges();
-            return RedirectToAction("Index");
-        }
-        return View(designation);
-    }
-
-    // ================= DETAILS =================
-
-    public IActionResult Details(int id)
+    [ValidateAntiForgeryToken]
+    public IActionResult Delete(int id)
     {
         var designation = _context.Designations.Find(id);
 
         if (designation == null)
             return NotFound();
 
-        return View(designation);
-    }
-    [HttpPost]
-    public IActionResult Delete(int id)
-    {
-        var data = _context.Designations.Find(id);
+        // 🔴 Check FK dependency (VERY IMPORTANT)
+        var isUsed = _context.Employees.Any(e => e.DesignationId == id);
 
-        if (data != null)
+        if (isUsed)
         {
-            _context.Designations.Remove(data);
-            _context.SaveChanges();
+            TempData["Error"] = "Cannot delete designation. It is assigned to employees.";
+            return RedirectToAction("Index");
         }
 
+        _context.Designations.Remove(designation);
+        _context.SaveChanges();
+
+        TempData["Success"] = "Designation deleted successfully";
         return RedirectToAction("Index");
     }
 }

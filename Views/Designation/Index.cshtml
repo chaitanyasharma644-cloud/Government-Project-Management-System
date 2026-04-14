@@ -75,12 +75,9 @@
         <a asp-action="Create" class="btn">+ Add Designation</a>
     </div>
 
-    <!-- SEARCH -->
+    <!-- 🔥 LIVE SEARCH -->
     <div class="search-bar">
-        <form method="get">
-            <input type="text" name="search" placeholder="Search designation..." value="@Context.Request.Query["search"]" />
-        </form>
-        <button class="btn btn-primary-custom" onclick="this.closest('form').submit()">Search</button>
+        <input type="text" id="designationSearch" placeholder="Search designation..." />
     </div>
 
     <!-- TABLE -->
@@ -93,17 +90,19 @@
             </tr>
         </thead>
 
-        <tbody>
+        <tbody id="designationTableBody">
             @if (Model != null && Model.Any())
             {
                 foreach (var des in Model)
                 {
                     <tr>
-                        <td>@des.DesignationName</td>
+                        <td class="des-name">@des.DesignationName</td>
                         <td>@des.DesignationDescription</td>
 
                         <td class="actions">
-                            <a asp-action="Delete" asp-route-id="@des.DesignationId" class="btn btn-delete">Delete</a>
+                            <form asp-action="Delete" asp-route-id="@des.DesignationId" method="post" style="display:inline;">
+                                <button type="submit" class="btn btn-delete">Delete</button>
+                            </form>
                         </td>
                     </tr>
                 }
@@ -118,3 +117,30 @@
     </table>
 
 </div>
+
+<!-- 🔥 LIVE SEARCH SCRIPT -->
+<script>
+
+    function filterDesignations() {
+
+        let input = document.getElementById("designationSearch").value.toLowerCase();
+        let rows = document.querySelectorAll("#designationTableBody tr");
+
+        rows.forEach(row => {
+
+            let nameCell = row.querySelector(".des-name");
+
+            if (!nameCell) return;
+
+            let name = nameCell.innerText.toLowerCase();
+
+            row.style.display = name.includes(input) ? "" : "none";
+
+        });
+
+    }
+
+    // 🔥 LIVE typing
+    document.getElementById("designationSearch").addEventListener("keyup", filterDesignations);
+
+</script>

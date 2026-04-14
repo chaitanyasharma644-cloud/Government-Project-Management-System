@@ -70,12 +70,9 @@
         <h2 class="page-title">PERMISSIONS</h2>
     </div>
 
-    <!-- SEARCH -->
+    <!-- 🔥 LIVE SEARCH -->
     <div class="search-bar">
-        <form method="get">
-            <input type="text" name="search" placeholder="Search permission..." value="@Context.Request.Query["search"]" />
-        </form>
-        <button class="btn btn-primary-custom" onclick="this.previousElementSibling.submit()">Search</button>
+        <input type="text" id="permissionSearch" placeholder="Search permission..." />
     </div>
 
     <!-- TABLE -->
@@ -87,20 +84,20 @@
             </tr>
         </thead>
 
-        <tbody>
+        <tbody id="permissionTableBody">
             @if (Model != null && Model.Any())
             {
                 foreach (var p in Model)
                 {
                     <tr>
-                        <td>@p.PermsName</td>
+                        <td class="perm-name">@p.PermsName</td>
                         <td>@p.Description</td>
                     </tr>
                 }
             }
             else
             {
-                <tr>
+                <tr id="noDataRow">
                     <td colspan="2" class="no-data">No permissions found</td>
                 </tr>
             }
@@ -108,3 +105,36 @@
     </table>
 
 </div>
+
+<!-- 🔥 LIVE SEARCH SCRIPT -->
+<script>
+
+    function filterPermissions() {
+
+        let input = document.getElementById("permissionSearch").value.toLowerCase();
+        let rows = document.querySelectorAll("#permissionTableBody tr");
+        let found = false;
+
+        rows.forEach(row => {
+
+            let nameCell = row.querySelector(".perm-name");
+
+            if (!nameCell) return; // skip no-data row
+
+            let name = nameCell.innerText.toLowerCase();
+
+            if (name.includes(input)) {
+                row.style.display = "";
+                found = true;
+            } else {
+                row.style.display = "none";
+            }
+
+        });
+
+    }
+
+    // 🔥 LIVE typing
+    document.getElementById("permissionSearch").addEventListener("keyup", filterPermissions);
+
+</script>

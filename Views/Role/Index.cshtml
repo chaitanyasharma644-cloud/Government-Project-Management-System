@@ -17,35 +17,33 @@
         </a>
     </div>
 
-    <!-- SEARCH -->
-    <form method="get" class="search-bar">
+    <!-- 🔥 LIVE SEARCH (no form) -->
+    <div class="search-bar">
 
         <input type="text"
-               name="search"
+               id="roleSearch"
                class="form-control"
-               placeholder="Search roles..."
-               value="@Context.Request.Query["search"]" />
+               placeholder="Search roles..." />
 
-        <button type="submit" class="btn btn-primary-custom">
-            Search
-        </button>
-
-    </form>
+    </div>
 
     <!-- GRID -->
     @if (Model != null && Model.Any())
     {
-        <div class="cards-grid">
+        <div class="cards-grid" id="roleGrid">
 
             @foreach (var role in Model)
             {
                 <div class="card role">
                     <div class="card-content">
-                    <!-- TOP -->
+
+                        <!-- TOP -->
                         <div class="card-top">
-                            <h4>@role.RoleName</h4>
+                            <h4 class="role-name">@role.RoleName</h4>
                         </div>
+
                     </div>
+
                     <!-- DESCRIPTION -->
                     <p>
                         @(string.IsNullOrEmpty(role.RoleDescription)
@@ -99,9 +97,43 @@
     else
     {
         <!-- EMPTY STATE -->
-        <div class="no-data">
+        <div class="no-data" id="noRoleMessage">
             <p>No roles found.</p>
         </div>
     }
 
 </div>
+
+<!-- 🔥 LIVE SEARCH SCRIPT -->
+<script>
+
+    function filterRoles() {
+
+        let input = document.getElementById("roleSearch").value.toLowerCase();
+        let cards = document.querySelectorAll(".card.role");
+        let found = false;
+
+        cards.forEach(card => {
+
+            let name = card.querySelector(".role-name").innerText.toLowerCase();
+
+            if (name.includes(input)) {
+                card.style.display = "block";
+                found = true;
+            } else {
+                card.style.display = "none";
+            }
+
+        });
+
+        let noData = document.getElementById("noRoleMessage");
+        if (noData) {
+            noData.style.display = found ? "none" : "block";
+        }
+
+    }
+
+    // 🔥 LIVE typing
+    document.getElementById("roleSearch").addEventListener("keyup", filterRoles);
+
+</script>

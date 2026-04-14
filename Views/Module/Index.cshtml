@@ -53,7 +53,7 @@
             bool canEdit = perms.Contains("EditModule");
             bool canDelete = perms.Contains("DeleteModule");
 
-            <div class="card module">
+            <div class="card module" data-project="@m.ProjectId">
                 <div class="card-content">
 
                     <!-- TOP -->
@@ -113,17 +113,37 @@
 </div>
 
 <script>
-    function searchModules() {
 
-        let input = document.getElementById("moduleSearch").value.toLowerCase();
+    function filterModules() {
+
+        let searchInput = document.getElementById("moduleSearch").value.toLowerCase();
+        let projectId = document.getElementById("projectFilter").value;
+
         let cards = document.querySelectorAll(".card.module");
 
         cards.forEach(card => {
 
             let name = card.querySelector(".module-name").innerText.toLowerCase();
 
-            card.style.display = name.includes(input) ? "block" : "none";
+            // ⚠️ you need projectId stored in card (we'll fix below)
+            let cardProjectId = card.getAttribute("data-project");
+
+            let matchSearch = name.includes(searchInput);
+            let matchProject = !projectId || cardProjectId === projectId;
+
+            if (matchSearch && matchProject) {
+                card.style.display = "block";
+            } else {
+                card.style.display = "none";
+            }
 
         });
     }
+
+    // 🔥 LIVE SEARCH
+    document.getElementById("moduleSearch").addEventListener("keyup", filterModules);
+
+    // 🔥 PROJECT FILTER CHANGE
+    document.getElementById("projectFilter").addEventListener("change", filterModules);
+
 </script>
