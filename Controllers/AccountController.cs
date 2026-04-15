@@ -1,10 +1,12 @@
 ﻿using GPMS.Data;
+using GPMS.Models;
 using GPMS.ViewModels;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
 
 namespace GPMS.Controllers
@@ -13,12 +15,17 @@ namespace GPMS.Controllers
     public class AccountController : Controller
     {
         private readonly AppDbContext _db;
+        private readonly IPasswordHasher<Employee> _passwordHasher;
 
-        public AccountController(AppDbContext db)
+        public AccountController(AppDbContext db, IPasswordHasher<Employee> passwordHasher)
         {
             _db = db;
+            _passwordHasher = passwordHasher;
         }
 
+        // =========================================
+        // LOGIN (GET)
+        // =========================================
         public IActionResult Login()
         {
             var captcha = GenerateCaptcha();
@@ -30,6 +37,9 @@ namespace GPMS.Controllers
             });
         }
 
+        // =========================================
+        // LOGIN (POST)
+        // =========================================
         [HttpPost]
         public async Task<IActionResult> Login(LoginViewModel model)
         {
@@ -39,57 +49,71 @@ namespace GPMS.Controllers
             if (model.Captcha != sessionCaptcha)
             {
                 ModelState.AddModelError("", "Invalid captcha.");
-                model.CaptchaCode = GenerateCaptcha();
-                HttpContext.Session.SetString("CaptchaCode", model.CaptchaCode);
-                return View(model);
+                return ReloadCaptcha(model);
             }
 
-            // 🔍 USER VALIDATION
+            // 🔍 USER FETCH
             var user = await _db.Employees
                 .FirstOrDefaultAsync(x => x.Username == model.Username);
 
-            if (user == null || user.Epassword != model.Password)
+            if (user == null)
             {
                 ModelState.AddModelError("", "Invalid username or password.");
-                model.CaptchaCode = GenerateCaptcha();
-                HttpContext.Session.SetString("CaptchaCode", model.CaptchaCode);
-                return View(model);
+                return ReloadCaptcha(model);
+            }
+
+            // 🔐 PASSWORD VALIDATION (HASH + fallback)
+            bool passwordValid = false;
+
+            if (!string.IsNullOrWhiteSpace(user.Epassword))
+            {
+                try
+                {
+                    var result = _passwordHasher.VerifyHashedPassword(
+                        user,
+                        user.Epassword,
+                        model.Password
+                    );
+
+                    passwordValid = result != PasswordVerificationResult.Failed;
+                }
+                catch (FormatException)
+                {
+                    // fallback for old plain text passwords
+                    passwordValid = user.Epassword == model.Password;
+                }
+            }
+
+            if (!passwordValid)
+            {
+                ModelState.AddModelError("", "Invalid username or password.");
+                return ReloadCaptcha(model);
             }
 
             // =========================================
-            // 🔥 CLAIMS (UPDATED FOR RBAC)
+            // 🔥 CLAIMS
             // =========================================
             var claims = new List<Claim>
             {
                 new Claim(ClaimTypes.Name, user.EmployeeName),
                 new Claim(ClaimTypes.NameIdentifier, user.EmployeeId.ToString()),
-
-                // 🔥 SAFE ROLE (fallback if null)
                 new Claim(ClaimTypes.Role, user.SystemRole ?? "User"),
-
-                // 🔥 IMPORTANT → ADMIN FLAG FOR FAST CHECK
                 new Claim("IsAdmin", user.IsAdmin.ToString())
             };
 
-            var claimsIdentity = new ClaimsIdentity(
+            var identity = new ClaimsIdentity(
                 claims,
                 CookieAuthenticationDefaults.AuthenticationScheme
             );
 
-            var authProperties = new AuthenticationProperties
-            {
-                IsPersistent = true
-            };
-
-            // 🔐 SIGN IN
             await HttpContext.SignInAsync(
                 CookieAuthenticationDefaults.AuthenticationScheme,
-                new ClaimsPrincipal(claimsIdentity),
-                authProperties
+                new ClaimsPrincipal(identity),
+                new AuthenticationProperties { IsPersistent = true }
             );
 
             // =========================================
-            // 🔥 SESSION (CLEAN + CONSISTENT)
+            // 🔥 SESSION
             // =========================================
             HttpContext.Session.SetInt32("EmployeeId", user.EmployeeId);
             HttpContext.Session.SetString("EmployeeName", user.EmployeeName);
@@ -97,11 +121,103 @@ namespace GPMS.Controllers
             HttpContext.Session.SetString("IsAdmin", user.IsAdmin.ToString());
 
             // =========================================
-            // 🔥 REDIRECTION (SIMPLIFIED)
+            // 🔐 PASSWORD POLICY
             // =========================================
+            bool passwordExpired =
+                !user.PasswordChangedAt.HasValue ||
+                user.PasswordChangedAt.Value.AddMonths(4) <= DateTime.Now;
+
+            if (user.IsFirstLogin || passwordExpired)
+            {
+                HttpContext.Session.SetString("ForcePasswordChange", "true");
+                return RedirectToAction("ChangePassword");
+            }
+
+            HttpContext.Session.Remove("ForcePasswordChange");
+
             return RedirectToAction("Index", "Dashboard");
         }
 
+        // =========================================
+        // CHANGE PASSWORD (GET)
+        // =========================================
+        [Authorize]
+        public IActionResult ChangePassword()
+        {
+            return View(new ChangePasswordViewModel());
+        }
+
+        // =========================================
+        // CHANGE PASSWORD (POST)
+        // =========================================
+        [Authorize]
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ChangePassword(ChangePasswordViewModel model)
+        {
+            if (!ModelState.IsValid)
+                return View(model);
+
+            var claim = User.FindFirst(ClaimTypes.NameIdentifier);
+
+            if (claim == null)
+                return RedirectToAction("Login");
+
+            int employeeId = int.Parse(claim.Value);
+
+            var user = await _db.Employees.FindAsync(employeeId);
+
+            if (user == null)
+                return RedirectToAction("Login");
+
+            // 🔐 VERIFY CURRENT PASSWORD
+            bool valid = false;
+
+            try
+            {
+                var result = _passwordHasher.VerifyHashedPassword(
+                    user,
+                    user.Epassword,
+                    model.CurrentPassword
+                );
+
+                valid = result != PasswordVerificationResult.Failed;
+            }
+            catch
+            {
+                valid = user.Epassword == model.CurrentPassword;
+            }
+
+            if (!valid)
+            {
+                ModelState.AddModelError("CurrentPassword", "Incorrect current password.");
+                return View(model);
+            }
+
+            if (model.CurrentPassword == model.NewPassword)
+            {
+                ModelState.AddModelError("NewPassword", "New password must be different.");
+                return View(model);
+            }
+
+            // 🔐 UPDATE PASSWORD
+            user.Epassword = _passwordHasher.HashPassword(user, model.NewPassword);
+            user.IsFirstLogin = false;
+            user.PasswordChangedAt = DateTime.Now;
+
+            await _db.SaveChangesAsync();
+
+            HttpContext.Session.Remove("ForcePasswordChange");
+
+            TempData["Success"] = "✅ Password changed successfully.";
+
+            return RedirectToAction("Index", "Dashboard");
+        }
+
+        // =========================================
+        // LOGOUT
+        // =========================================
+        [Authorize]
         public async Task<IActionResult> Logout()
         {
             HttpContext.Session.Clear();
@@ -113,6 +229,19 @@ namespace GPMS.Controllers
             return RedirectToAction("Login");
         }
 
+        // =========================================
+        // 🔁 HELPER: Reload CAPTCHA
+        // =========================================
+        private IActionResult ReloadCaptcha(LoginViewModel model)
+        {
+            model.CaptchaCode = GenerateCaptcha();
+            HttpContext.Session.SetString("CaptchaCode", model.CaptchaCode);
+            return View("Login", model);
+        }
+
+        // =========================================
+        // 🔢 CAPTCHA GENERATOR
+        // =========================================
         private string GenerateCaptcha()
         {
             const string chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789abcdefghjklmnpqrstuvwxyz";

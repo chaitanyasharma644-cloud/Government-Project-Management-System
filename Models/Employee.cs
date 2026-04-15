@@ -4,7 +4,6 @@ using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using Microsoft.EntityFrameworkCore;
 
-
 namespace GPMS.Models;
 
 [Table("Employee")]
@@ -27,9 +26,11 @@ public partial class Employee
     [Required(ErrorMessage = "Email is required")]
     [EmailAddress(ErrorMessage = "Enter valid email")]
     [RegularExpression(@"^[^@\s]+@[^@\s]+\.[^@\s]+$",
-    ErrorMessage = "Enter proper email like abc@gmail.com")]
+        ErrorMessage = "Enter proper email like abc@gmail.com")]
+    [Column("email")]
+    [StringLength(100)]
+    [Unicode(false)]
     public string Email { get; set; } = null!;
-
 
     [Column("username")]
     [StringLength(50)]
@@ -49,8 +50,13 @@ public partial class Employee
     [Column("system_role")]
     [StringLength(20)]
     [Unicode(false)]
+    public string SystemRole { get; set; } = "Employee";
 
-    public string SystemRole { get; set; } = "Employee"; // Default
+    [Column("IsFirstLogin")]
+    public bool IsFirstLogin { get; set; } = true;
+
+    [Column("PasswordChangedAt", TypeName = "datetime")]
+    public DateTime? PasswordChangedAt { get; set; }
 
     // =========================================
     // NAVIGATION PROPERTIES

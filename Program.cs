@@ -1,7 +1,9 @@
 using GPMS.Data;
-using GPMS.Services; // ✅ IMPORTANT (for PermissionService)
-using Microsoft.EntityFrameworkCore;
+using GPMS.Filters;
+using GPMS.Services;
 using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -9,26 +11,31 @@ var builder = WebApplication.CreateBuilder(args);
 // SERVICES
 // ==============================
 
-// Add MVC
-builder.Services.AddControllersWithViews();
-
 // Add DbContext
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
-// 🔥 REGISTER PERMISSION SERVICE (CRITICAL)
+// Register services
 builder.Services.AddScoped<PermissionService>();
+builder.Services.AddScoped<ForcePasswordChangeFilter>();
+builder.Services.AddScoped<IPasswordHasher<GPMS.Models.Employee>, PasswordHasher<GPMS.Models.Employee>>();
+
+// Add MVC + global filter
+builder.Services.AddControllersWithViews(options =>
+{
+    options.Filters.AddService<ForcePasswordChangeFilter>();
+});
 
 // Authentication (Cookie)
 builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
     .AddCookie(options =>
     {
         options.LoginPath = "/Account/Login";
+        options.AccessDeniedPath = "/Account/Login";
 
-        // 🔐 Secure cookies
-        options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
-        options.Cookie.SameSite = SameSiteMode.Lax;
         options.Cookie.HttpOnly = true;
+        options.Cookie.SameSite = SameSiteMode.Lax;
+        options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
     });
 
 // Session
@@ -37,8 +44,6 @@ builder.Services.AddSession(options =>
     options.IdleTimeout = TimeSpan.FromHours(8);
     options.Cookie.HttpOnly = true;
     options.Cookie.IsEssential = true;
-
-    // 🔐 Secure session cookies
     options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
 });
 
@@ -55,7 +60,7 @@ if (!app.Environment.IsDevelopment())
     app.UseHsts();
 }
 
-// 🔐 HTTPS
+// HTTPS
 app.UseHttpsRedirection();
 
 // Static files
@@ -66,11 +71,11 @@ app.UseRouting();
 // Session
 app.UseSession();
 
-// 🔐 Auth (ORDER MATTERS)
+// Authentication + Authorization
 app.UseAuthentication();
 app.UseAuthorization();
 
-// Routing
+// Default route
 app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Account}/{action=Login}/{id?}");
