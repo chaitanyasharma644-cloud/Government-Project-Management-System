@@ -4,6 +4,7 @@ using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using Microsoft.EntityFrameworkCore;
 
+
 namespace GPMS.Models;
 
 [Table("Employee")]
@@ -20,17 +21,21 @@ public partial class Employee
     [Column("employee_name")]
     [StringLength(100)]
     [Unicode(false)]
+    [Required(ErrorMessage = "Name is required")]
     public string EmployeeName { get; set; } = null!;
 
-    [Column("email")]
-    [StringLength(100)]
-    [Unicode(false)]
+    [Required(ErrorMessage = "Email is required")]
+    [EmailAddress(ErrorMessage = "Enter valid email")]
+    [RegularExpression(@"^[^@\s]+@[^@\s]+\.[^@\s]+$",
+    ErrorMessage = "Enter proper email like abc@gmail.com")]
     public string Email { get; set; } = null!;
+
 
     [Column("username")]
     [StringLength(50)]
     [Unicode(false)]
-    public string? Username { get; set; }
+    [Required(ErrorMessage = "Username is required")]
+    public string Username { get; set; } = null!;
 
     [Column("epassword")]
     [StringLength(255)]
@@ -44,6 +49,7 @@ public partial class Employee
     [Column("system_role")]
     [StringLength(20)]
     [Unicode(false)]
+
     public string SystemRole { get; set; } = "Employee"; // Default
 
     // =========================================

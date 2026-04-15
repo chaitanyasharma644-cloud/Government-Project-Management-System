@@ -7,7 +7,7 @@ using Microsoft.EntityFrameworkCore;
 namespace GPMS.Models
 {
     [Table("Module")]
-    public partial class Module
+    public partial class Module : IValidatableObject
     {
         [Key]
         [Column("module_id")]
@@ -66,5 +66,15 @@ namespace GPMS.Models
 
         [InverseProperty("Module")]
         public virtual ICollection<Task> Tasks { get; set; } = new List<Task>();
+        public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
+        {
+            if (ModuleStartDate.HasValue && ModuleEndDate.HasValue &&
+                ModuleEndDate < ModuleStartDate)
+            {
+                yield return new ValidationResult(
+                    "End date cannot be before start date",
+                    new[] { nameof(ModuleEndDate) });
+            }
+        }
     }
 }
