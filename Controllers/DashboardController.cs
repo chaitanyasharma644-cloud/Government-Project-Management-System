@@ -18,7 +18,7 @@ namespace GPMS.Controllers
 
         public async Task<IActionResult> Index()
         {
-            // 🔑 Get logged-in employee ID safely
+            // 🔑 Get logged-in employee ID
             var claim = User.FindFirst(ClaimTypes.NameIdentifier);
 
             if (claim == null)
@@ -34,7 +34,7 @@ namespace GPMS.Controllers
                 return RedirectToAction("Login", "Account");
 
             // =====================================================
-            // 👑 ADMIN DASHBOARD
+            // 👑 ADMIN DASHBOARD (ALL PROJECTS)
             // =====================================================
             if (employee.IsAdmin)
             {
@@ -42,57 +42,47 @@ namespace GPMS.Controllers
 
                 ViewBag.ProjectCount = await _context.Projects.CountAsync();
                 ViewBag.ModuleCount = await _context.Modules.CountAsync();
-                ViewBag.TaskCount = await _context.Tasks.CountAsync();
                 ViewBag.EmployeeCount = await _context.Employees.CountAsync();
 
-                ViewBag.Completed = await _context.Tasks
-                    .CountAsync(t => t.TaskStatus == "Completed");
+                // 🔹 PROJECT STATUS (ALL PROJECTS)
+                ViewBag.CompletedProjects = await _context.Projects
+                    .CountAsync(p => p.ProjectStatus == "Completed");
 
-                ViewBag.Ongoing = await _context.Tasks
-                    .CountAsync(t => t.TaskStatus == "Ongoing");
+                ViewBag.OngoingProjects = await _context.Projects
+                    .CountAsync(p => p.ProjectStatus == "Ongoing");
             }
             else
             {
                 // =====================================================
-                // 👤 EMPLOYEE DASHBOARD
+                // 👤 EMPLOYEE DASHBOARD (ASSIGNED PROJECTS ONLY)
                 // =====================================================
                 ViewBag.IsAdmin = false;
 
-                // 🔹 PROJECTS (assigned)
+                // 🔹 ASSIGNED PROJECTS
                 var projectIds = await _context.Assignments
                     .Where(a => a.EmployeeId == employeeId && a.ProjectId != null)
-                    .Select(a => a.ProjectId)
+                    .Select(a => a.ProjectId.Value)
                     .Distinct()
                     .ToListAsync();
 
-                // 🔹 MODULES (assigned)
+                // 🔹 ASSIGNED MODULES
                 var moduleIds = await _context.Assignments
                     .Where(a => a.EmployeeId == employeeId && a.ModuleId != null)
-                    .Select(a => a.ModuleId)
-                    .Distinct()
-                    .ToListAsync();
-
-                // 🔹 TASKS (assigned)
-                var taskIds = await _context.Assignments
-                    .Where(a => a.EmployeeId == employeeId && a.TaskId != null)
-                    .Select(a => a.TaskId)
+                    .Select(a => a.ModuleId.Value)
                     .Distinct()
                     .ToListAsync();
 
                 ViewBag.ProjectCount = projectIds.Count;
                 ViewBag.ModuleCount = moduleIds.Count;
-                ViewBag.TaskCount = taskIds.Count;
 
-                // 🔹 TASK STATUS (based on assigned projects)
-                var tasks = _context.Tasks
-                    .Include(t => t.Module)
-                    .Where(t => projectIds.Contains(t.Module.ProjectId));
+                // 🔹 PROJECT STATUS (ONLY ASSIGNED PROJECTS)
+                ViewBag.CompletedProjects = await _context.Projects
+                    .Where(p => projectIds.Contains(p.ProjectId))
+                    .CountAsync(p => p.ProjectStatus == "Completed");
 
-                ViewBag.Ongoing = await tasks
-                    .CountAsync(t => t.TaskStatus == "Ongoing");
-
-                ViewBag.Completed = await tasks
-                    .CountAsync(t => t.TaskStatus == "Completed");
+                ViewBag.OngoingProjects = await _context.Projects
+                    .Where(p => projectIds.Contains(p.ProjectId))
+                    .CountAsync(p => p.ProjectStatus == "Ongoing");
             }
 
             return View();
