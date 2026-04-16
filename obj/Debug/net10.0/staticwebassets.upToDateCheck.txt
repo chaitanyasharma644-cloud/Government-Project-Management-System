@@ -1,5 +1,6 @@
 wwwroot\css\dashboard.css
 wwwroot\css\site.css
+wwwroot\Emblem_of_India.png
 wwwroot\favicon.ico
 wwwroot\js\site.js
 wwwroot\lib\bootstrap\dist\css\bootstrap-grid.css
