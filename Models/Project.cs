@@ -13,7 +13,7 @@ namespace GPMS.Models
         [Column("project_id")]
         public int ProjectId { get; set; }
 
-        [Required] // 🔥 ensure always present
+        [Required]
         [Column("project_name")]
         [StringLength(100)]
         [Unicode(false)]

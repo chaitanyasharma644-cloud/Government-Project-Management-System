@@ -127,10 +127,9 @@
             loadModules(this.value);
         });
 
-        // 🔥 FIX: Run on page load to restore selection if validation failed
         window.onload = function() {
             var pId = document.getElementById("projectDropdown").value;
-            var mId = "@Model?.ModuleId"; // Get the ID from the model if it exists
+            var mId = "@Model?.ModuleId"; 
             if (pId) {
                 loadModules(pId, mId);
             }

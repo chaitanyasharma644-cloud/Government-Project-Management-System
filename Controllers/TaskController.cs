@@ -34,7 +34,7 @@ namespace GPMS.Controllers
         }
 
         // =========================================
-        // TASK LIST (🔥 UPDATED)
+        // TASK LIST
         // =========================================
         public async Task<IActionResult> Index(int? projectId, int? moduleId, string search)
         {
@@ -43,13 +43,16 @@ namespace GPMS.Controllers
             var employee = await _context.Employees
                 .FirstOrDefaultAsync(e => e.EmployeeId == employeeId);
 
+            if (employee == null)
+                return Unauthorized();
+
             var allTasks = await _context.Tasks
                 .Include(t => t.Module)
                     .ThenInclude(m => m.Project)
                 .ToListAsync();
 
             var filteredTasks = new List<TaskModel>();
-            var taskPermissions = new Dictionary<int, List<string>>(); // ✅ ADDED
+            var taskPermissions = new Dictionary<int, List<string>>();
 
             foreach (var t in allTasks)
             {
@@ -64,32 +67,80 @@ namespace GPMS.Controllers
                 {
                     filteredTasks.Add(t);
 
-                    // ✅ ADD PER-TASK PERMISSIONS
                     var perms = await _permissionService.GetPermissions(employeeId, projId);
                     taskPermissions[t.TaskId] = perms;
                 }
             }
 
-            // 🔍 Filters
+            // Filters
             if (projectId.HasValue)
-                filteredTasks = filteredTasks.Where(t => t.Module.ProjectId == projectId).ToList();
+                filteredTasks = filteredTasks
+                    .Where(t => t.Module.ProjectId == projectId.Value)
+                    .ToList();
 
             if (moduleId.HasValue)
-                filteredTasks = filteredTasks.Where(t => t.ModuleId == moduleId).ToList();
+                filteredTasks = filteredTasks
+                    .Where(t => t.ModuleId == moduleId.Value)
+                    .ToList();
 
-            if (!string.IsNullOrEmpty(search))
-                filteredTasks = filteredTasks.Where(t => t.TaskName.Contains(search)).ToList();
+            if (!string.IsNullOrWhiteSpace(search))
+            {
+                search = search.Trim();
 
-            ViewBag.TaskPermissions = taskPermissions; // ✅ ADDED
+                filteredTasks = filteredTasks.Where(t =>
+                    t.TaskName.Contains(search) ||
+                    (t.TaskDescription != null && t.TaskDescription.Contains(search)) ||
+                    (t.TaskStatus != null && t.TaskStatus.Contains(search)) ||
+                    (t.Module != null && t.Module.ModuleName.Contains(search))
+                ).ToList();
+            }
 
-            ViewBag.Projects = new SelectList(_context.Projects, "ProjectId", "ProjectName", projectId);
-            ViewBag.Modules = new SelectList(_context.Modules, "ModuleId", "ModuleName", moduleId);
+            ViewBag.TaskPermissions = taskPermissions;
+
+            // Project dropdown
+            List<Project> projects;
+            if (employee.IsAdmin)
+            {
+                projects = await _context.Projects.ToListAsync();
+            }
+            else
+            {
+                var assignedProjectIds = await _context.Assignments
+                    .Where(a => a.EmployeeId == employeeId && a.ProjectId != null)
+                    .Select(a => a.ProjectId.Value)
+                    .Distinct()
+                    .ToListAsync();
+
+                projects = await _context.Projects
+                    .Where(p => assignedProjectIds.Contains(p.ProjectId))
+                    .ToListAsync();
+            }
+
+            ViewBag.Projects = new SelectList(projects, "ProjectId", "ProjectName", projectId);
+
+            // Module dropdown → only selected project's modules
+            if (projectId.HasValue)
+            {
+                var modules = await _context.Modules
+                    .Where(m => m.ProjectId == projectId.Value)
+                    .ToListAsync();
+
+                ViewBag.Modules = new SelectList(modules, "ModuleId", "ModuleName", moduleId);
+            }
+            else
+            {
+                ViewBag.Modules = new SelectList(new List<Module>(), "ModuleId", "ModuleName");
+            }
+
+            ViewBag.SelectedProjectId = projectId;
+            ViewBag.SelectedModuleId = moduleId;
+            ViewBag.Search = search;
 
             return View(filteredTasks);
         }
 
         // =========================================
-        // TASK DETAILS (🔥 UPDATED)
+        // TASK DETAILS
         // =========================================
         public async Task<IActionResult> Details(int id)
         {
@@ -110,6 +161,9 @@ namespace GPMS.Controllers
             var employee = await _context.Employees
                 .FirstOrDefaultAsync(e => e.EmployeeId == employeeId);
 
+            if (employee == null)
+                return Unauthorized();
+
             bool isAssigned = await _context.Assignments
                 .AnyAsync(a => a.EmployeeId == employeeId && a.ProjectId == projectId);
 
@@ -118,12 +172,10 @@ namespace GPMS.Controllers
             if (!employee.IsAdmin && (!isAssigned || !canView))
                 return Forbid();
 
-            // 🔥 UI permissions
-            ViewBag.CanEditTask = await _permissionService.HasPermission(employeeId, projectId, "EditTask"); // ✅ FIXED NAME
-            ViewBag.CanDeleteTask = await _permissionService.HasPermission(employeeId, projectId, "DeleteTask"); // ✅ FIXED NAME
-            ViewBag.CanCreateTask = await _permissionService.HasPermission(employeeId, projectId, "CreateTask"); // ✅ FIXED NAME
+            ViewBag.CanEditTask = await _permissionService.HasPermission(employeeId, projectId, "EditTask");
+            ViewBag.CanDeleteTask = await _permissionService.HasPermission(employeeId, projectId, "DeleteTask");
+            ViewBag.CanCreateTask = await _permissionService.HasPermission(employeeId, projectId, "CreateTask");
 
-            // ✅ ADD EMPLOYEE PERMISSIONS (required by view)
             ViewBag.CanViewEmployee = await _permissionService.HasPermission(employeeId, projectId, "ViewAssignment");
             ViewBag.CanEditEmployee = await _permissionService.HasPermission(employeeId, projectId, "EditAssignment");
 
@@ -140,26 +192,27 @@ namespace GPMS.Controllers
             var employee = await _context.Employees
                 .FirstOrDefaultAsync(e => e.EmployeeId == employeeId);
 
-            // If projectId is provided, check permission for that specific project
+            if (employee == null)
+                return Unauthorized();
+
             if (projectId.HasValue)
             {
-                bool canCreate = await _permissionService.HasPermission(employeeId, projectId, "CreateTask");
+                bool canCreate = await _permissionService.HasPermission(employeeId, projectId.Value, "CreateTask");
                 if (!employee.IsAdmin && !canCreate)
                     return Forbid();
             }
 
-            // Build project list: Admin = all, Employee = assigned only
             List<Project> projects;
 
-            if (employee != null && employee.IsAdmin)
+            if (employee.IsAdmin)
             {
                 projects = await _context.Projects.ToListAsync();
             }
             else
             {
                 var assignedProjectIds = await _context.Assignments
-                    .Where(a => a.EmployeeId == employeeId)
-                    .Select(a => a.ProjectId)
+                    .Where(a => a.EmployeeId == employeeId && a.ProjectId != null)
+                    .Select(a => a.ProjectId.Value)
                     .Distinct()
                     .ToListAsync();
 
@@ -170,15 +223,18 @@ namespace GPMS.Controllers
 
             ViewBag.ProjectList = new SelectList(projects, "ProjectId", "ProjectName", projectId);
 
-            // Pre-load modules if projectId is known
             if (projectId.HasValue)
             {
                 ViewBag.ModuleList = new SelectList(
-                    _context.Modules.Where(m => m.ProjectId == projectId),
+                    await _context.Modules.Where(m => m.ProjectId == projectId.Value).ToListAsync(),
                     "ModuleId",
                     "ModuleName"
                 );
                 ViewBag.SelectedProjectId = projectId;
+            }
+            else
+            {
+                ViewBag.ModuleList = new SelectList(new List<Module>(), "ModuleId", "ModuleName");
             }
 
             return View();
@@ -210,11 +266,12 @@ namespace GPMS.Controllers
                 return RedirectToAction(nameof(Index), new { projectId = module.ProjectId });
             }
 
-            // Re-populate on failure
             ViewBag.ProjectList = new SelectList(_context.Projects, "ProjectId", "ProjectName", module.ProjectId);
             ViewBag.ModuleList = new SelectList(
                 _context.Modules.Where(m => m.ProjectId == module.ProjectId),
-                "ModuleId", "ModuleName", task.ModuleId
+                "ModuleId",
+                "ModuleName",
+                task.ModuleId
             );
             ViewBag.SelectedProjectId = module.ProjectId;
 
@@ -248,6 +305,7 @@ namespace GPMS.Controllers
                 "ModuleName",
                 task.ModuleId
             );
+            ViewBag.SelectedProjectId = projectId;
 
             return View(task);
         }
@@ -289,7 +347,13 @@ namespace GPMS.Controllers
             }
 
             ViewBag.ProjectList = new SelectList(_context.Projects, "ProjectId", "ProjectName", module.ProjectId);
-            ViewBag.ModuleList = new SelectList(_context.Modules, "ModuleId", "ModuleName", task.ModuleId);
+            ViewBag.ModuleList = new SelectList(
+                _context.Modules.Where(m => m.ProjectId == module.ProjectId),
+                "ModuleId",
+                "ModuleName",
+                task.ModuleId
+            );
+            ViewBag.SelectedProjectId = module.ProjectId;
 
             return View(task);
         }
@@ -315,7 +379,6 @@ namespace GPMS.Controllers
             if (!await _permissionService.HasPermission(employeeId, projectId, "DeleteTask"))
                 return Forbid();
 
-            // 🔥 CHECK ASSIGNMENTS (FIX)
             int assignmentCount = await _context.Assignments
                 .CountAsync(a => a.TaskId == id);
 
@@ -325,7 +388,6 @@ namespace GPMS.Controllers
                 return RedirectToAction("Details", new { id });
             }
 
-            // ✅ SAFE DELETE
             _context.Tasks.Remove(task);
             await _context.SaveChangesAsync();
 
@@ -337,14 +399,15 @@ namespace GPMS.Controllers
         // =========================================
         // AJAX: MODULES BY PROJECT
         // =========================================
+        [HttpGet]
         public JsonResult GetModulesByProject(int projectId)
         {
             var modules = _context.Modules
                 .Where(m => m.ProjectId == projectId)
                 .Select(m => new
                 {
-                    ModuleId = m.ModuleId,
-                    ModuleName = m.ModuleName
+                    moduleId = m.ModuleId,
+                    moduleName = m.ModuleName
                 })
                 .ToList();
 

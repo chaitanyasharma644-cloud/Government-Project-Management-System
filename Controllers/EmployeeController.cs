@@ -109,7 +109,7 @@ namespace GPMS.Controllers
                 _context.Add(employee);
                 await _context.SaveChangesAsync();
 
-                TempData["Success"] = "✅ Employee created successfully.";
+                TempData["Success"] = "Employee created successfully.";
 
                 return RedirectToAction(nameof(Index));
             }
@@ -174,7 +174,7 @@ namespace GPMS.Controllers
 
                     await _context.SaveChangesAsync();
 
-                    TempData["Success"] = "✅ Employee updated successfully.";
+                    TempData["Success"] = "Employee updated successfully.";
                 }
                 catch (DbUpdateConcurrencyException)
                 {
@@ -230,7 +230,7 @@ namespace GPMS.Controllers
                 _context.Employees.Remove(emp);
                 await _context.SaveChangesAsync();
 
-                TempData["Success"] = "✅ Employee deleted successfully.";
+                TempData["Success"] = "Employee deleted successfully.";
             }
 
             return RedirectToAction(nameof(Index));

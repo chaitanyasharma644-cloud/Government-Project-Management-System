@@ -209,7 +209,7 @@ namespace GPMS.Controllers
 
             HttpContext.Session.Remove("ForcePasswordChange");
 
-            TempData["Success"] = "✅ Password changed successfully.";
+            TempData["Success"] = "Password changed successfully.";
 
             return RedirectToAction("Index", "Dashboard");
         }

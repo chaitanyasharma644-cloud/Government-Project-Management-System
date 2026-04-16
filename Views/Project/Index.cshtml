@@ -19,7 +19,7 @@
         }
     </div>
 
-    <!-- 🔍 SEARCH BAR -->
+    <!-- SEARCH BAR -->
     <div class="search-bar project-search-bar">
 
         <input type="text"
@@ -69,16 +69,16 @@
 
                 <div class="card-actions">
 
-                    <!-- ✅ VIEW -->
+                    <!-- VIEW -->
                     <a href="/Project/Details/@p.ProjectId" class="btn">View</a>
 
-                    <!-- ✅ EDIT -->
+                    <!-- EDIT -->
                     @if (canEdit)
                     {
                         <a href="/Project/Edit/@p.ProjectId" class="btn">Edit</a>
                     }
 
-                    <!-- ✅ DELETE -->
+                    <!-- DELETE -->
                     @if (canDelete)
                     {
                         <form method="post"

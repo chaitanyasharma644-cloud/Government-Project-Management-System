@@ -36,7 +36,7 @@
                     <a class="nav-link" asp-controller="Dashboard" asp-action="Index">Dashboard</a>
                 </li>
 
-                <!-- 👑 ADMIN ONLY -->
+                <!-- ADMIN ONLY -->
                 @if (User.IsInRole("Admin"))
                 {
                     <li class="nav-item">
@@ -68,7 +68,7 @@
                     </li>
                 }
 
-                <!-- 👤 EMPLOYEE ONLY -->
+                <!-- EMPLOYEE ONLY -->
                 @if (!User.IsInRole("Admin"))
                 {
                     <li class="nav-item">
@@ -89,15 +89,6 @@
 
             <!-- USER PROFILE -->
              <div class="d-flex align-items-center user-section">
-
-                <!--<div class="me-3 text-end">
-                    <div class="fw-bold">@ViewBag.EmployeeName</div>
-                    <small class="text-muted">@ViewBag.EmployeeDesignation</small>
-                </div>
-
-                <div class="avatar me-3">
-                    @ViewBag.EmployeeInitial
-                </div>-->
 
                 <a asp-controller="Account"
                    asp-action="Logout"

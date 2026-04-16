@@ -36,7 +36,7 @@ namespace GPMS.Data
                 .HasOne(a => a.Employee)
                 .WithMany(e => e.Assignments)
                 .HasForeignKey(a => a.EmployeeId)
-                .OnDelete(DeleteBehavior.Restrict); // 🔥 safer
+                .OnDelete(DeleteBehavior.Restrict);
 
             modelBuilder.Entity<Assignment>()
                 .HasOne(a => a.Project)

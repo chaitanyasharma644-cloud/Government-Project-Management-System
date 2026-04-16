@@ -19,7 +19,7 @@ namespace GPMS.Filters
         {
             var user = context.HttpContext.User;
 
-            // ✅ Do nothing if user is not logged in
+            // Do nothing if user is not logged in
             if (user?.Identity == null || !user.Identity.IsAuthenticated)
             {
                 await next();
@@ -29,7 +29,7 @@ namespace GPMS.Filters
             var controller = context.RouteData.Values["controller"]?.ToString();
             var action = context.RouteData.Values["action"]?.ToString();
 
-            // ✅ Allow these actions
+            // Allow these actions
             if (controller == "Account" &&
                 (action == "Login" || action == "ChangePassword" || action == "Logout"))
             {

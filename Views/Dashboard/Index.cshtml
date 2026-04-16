@@ -6,7 +6,6 @@
 
 <div class="dashboard-container">
 
-    <!-- 🔥 TITLE -->
     <h2 class="mb-4">
         @(ViewBag.IsAdmin ? "Admin Dashboard" : "My Dashboard")
     </h2>
@@ -52,12 +51,11 @@ else
     </div>
 
     <!-- ========================= -->
-    <!-- 👑 ADMIN DASHBOARD -->
+    <!--  ADMIN DASHBOARD -->
     <!-- ========================= -->
     @if (ViewBag.IsAdmin == true)
     {
 
-        <!-- 👑 ADMIN QUICK ACTIONS -->
         <div class="panel quick-actions">
 
             <h3>Quick Actions</h3>

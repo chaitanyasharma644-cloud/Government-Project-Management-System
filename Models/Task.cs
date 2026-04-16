@@ -21,7 +21,7 @@ public partial class Task : IValidatableObject
     public int ModuleId { get; set; }
 
     // ==============================
-    // NOT MAPPED (FOR UI ONLY ✅)
+    // NOT MAPPED 
     // ==============================
     [NotMapped]
     public int? ProjectId { get; set; }

@@ -13,7 +13,7 @@ namespace GPMS.Services
         }
 
         // =========================================
-        // 🔐 ADMIN CHECK
+        //  ADMIN CHECK
         // =========================================
         private async Task<bool> IsAdmin(int employeeId)
         {
@@ -24,14 +24,14 @@ namespace GPMS.Services
         }
 
         // =========================================
-        // 🔐 GET ROLE IDS (🔥 DYNAMIC)
+        //  GET ROLE IDS
         // =========================================
         private async Task<List<int>> GetRoleIds(int employeeId, int? projectId)
         {
             var query = _context.Assignments
                 .Where(a => a.EmployeeId == employeeId);
 
-            // ✅ If projectId provided → filter by project
+            //  If projectId provided → filter by project
             if (projectId.HasValue)
             {
                 query = query.Where(a => a.ProjectId == projectId.Value);
@@ -43,11 +43,11 @@ namespace GPMS.Services
         }
 
         // =========================================
-        // 🔐 CHECK SINGLE PERMISSION
+        //  CHECK SINGLE PERMISSION
         // =========================================
         public async Task<bool> HasPermission(int employeeId, int? projectId, string permissionName)
         {
-            // ✅ ADMIN BYPASS
+            //  ADMIN BYPASS
             if (await IsAdmin(employeeId))
                 return true;
 
@@ -65,11 +65,11 @@ namespace GPMS.Services
         }
 
         // =========================================
-        // 🔐 GET ALL PERMISSIONS
+        //  GET ALL PERMISSIONS
         // =========================================
         public async Task<List<string>> GetPermissions(int employeeId, int? projectId)
         {
-            // ✅ ADMIN → ALL PERMISSIONS
+            //  ADMIN → ALL PERMISSIONS
             if (await IsAdmin(employeeId))
             {
                 return await _context.Permissions
@@ -90,7 +90,7 @@ namespace GPMS.Services
         }
 
         // =========================================
-        // 🔐 CHECK ANY PERMISSION
+        //  CHECK ANY PERMISSION
         // =========================================
         public async Task<bool> HasAnyPermission(int employeeId, int? projectId, params string[] permissions)
         {
@@ -110,7 +110,7 @@ namespace GPMS.Services
         }
 
         // =========================================
-        // 🔐 CHECK ALL PERMISSIONS
+        //  CHECK ALL PERMISSIONS
         // =========================================
         public async Task<bool> HasAllPermissions(int employeeId, int? projectId, params string[] permissions)
         {

@@ -37,7 +37,7 @@ public partial class Assignment
     [Column("assigned_date")]
     public DateOnly AssignedDate { get; set; }
 
-    // ✅ ROLE IS NOW IMPORTANT (MAKE REQUIRED)
+    // ROLE IS NOW IMPORTANT (MAKE REQUIRED)
     [Required(ErrorMessage = "Role is required")]
     [Column("role_id")]
     public int RoleId { get; set; }

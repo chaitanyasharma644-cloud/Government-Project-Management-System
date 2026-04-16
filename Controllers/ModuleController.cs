@@ -191,7 +191,7 @@ namespace GPMS.Controllers
                 _context.Modules.Add(module);
                 await _context.SaveChangesAsync();
 
-                TempData["Success"] = "✅ Module created successfully.";
+                TempData["Success"] = "Module created successfully.";
                 return RedirectToAction(nameof(Index));
             }
 

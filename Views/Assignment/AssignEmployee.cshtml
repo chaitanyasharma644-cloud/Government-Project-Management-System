@@ -3,7 +3,6 @@
 @{
     ViewData["Title"] = "Assign Employee";
 
-    // ✅ FIX: move Razor logic here
     var disableModule = Model.CurrentLevel == "project" ? "disabled" : "";
     var disableTask = Model.CurrentLevel != "task" ? "disabled" : "";
 }
@@ -116,14 +115,12 @@
 <script>
 $(document).ready(function () {
 
-    // ✅ Select2
     $('#employeeDropdown').select2({
         placeholder: "Search and select employee",
         allowClear: true,
         width: '100%'
     });
 
-    // 🔥 LEVEL BASED CONTROL
     const level = '@Model.CurrentLevel';
 
     if (level === "project") {
@@ -141,7 +138,6 @@ $(document).ready(function () {
         $('#taskDropdown').prop('disabled', false);
     }
 
-    // ✅ Enable Module after Project
     $('#projectDropdown').change(function () {
         if ($(this).val()) {
             $('#moduleDropdown').prop('disabled', false);
@@ -151,7 +147,6 @@ $(document).ready(function () {
         }
     });
 
-    // ✅ Enable Task after Module
     $('#moduleDropdown').change(function () {
         if ($(this).val()) {
             $('#taskDropdown').prop('disabled', false);
