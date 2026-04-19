@@ -27,7 +27,6 @@ namespace GPMS.Controllers
             _passwordHasher = passwordHasher;
         }
 
-        // 🔑 Get Logged-in EmployeeId
         private int GetEmployeeId()
         {
             var claim = User.FindFirst(ClaimTypes.NameIdentifier);
@@ -38,9 +37,6 @@ namespace GPMS.Controllers
             return int.Parse(claim.Value);
         }
 
-        // =========================================
-        // INDEX
-        // =========================================
         public async Task<IActionResult> Index(string search)
         {
             var employeeId = GetEmployeeId();
@@ -60,7 +56,6 @@ namespace GPMS.Controllers
                     e.Username.Contains(search));
             }
 
-            // UI Permissions
             ViewBag.CanCreate = await _permissionService.HasPermission(employeeId, null, "CreateEmployee");
             ViewBag.CanEdit = await _permissionService.HasPermission(employeeId, null, "EditEmployee");
             ViewBag.CanDelete = await _permissionService.HasPermission(employeeId, null, "DeleteEmployee");
@@ -68,9 +63,6 @@ namespace GPMS.Controllers
             return View(await employees.ToListAsync());
         }
 
-        // =========================================
-        // CREATE (GET)
-        // =========================================
         public async Task<IActionResult> Create()
         {
             var employeeId = GetEmployeeId();
@@ -79,13 +71,9 @@ namespace GPMS.Controllers
                 return Forbid();
 
             await LoadDesignations();
-
             return View();
         }
 
-        // =========================================
-        // CREATE (POST)
-        // =========================================
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(Employee employee)
@@ -99,10 +87,7 @@ namespace GPMS.Controllers
             {
                 var defaultPassword = "nicemployee123#";
 
-                // 🔐 Hash password
                 employee.Epassword = _passwordHasher.HashPassword(employee, defaultPassword);
-
-                // 🆕 First login setup
                 employee.IsFirstLogin = true;
                 employee.PasswordChangedAt = null;
 
@@ -110,7 +95,6 @@ namespace GPMS.Controllers
                 await _context.SaveChangesAsync();
 
                 TempData["Success"] = "Employee created successfully.";
-
                 return RedirectToAction(nameof(Index));
             }
 
@@ -118,9 +102,6 @@ namespace GPMS.Controllers
             return View(employee);
         }
 
-        // =========================================
-        // EDIT (GET)
-        // =========================================
         public async Task<IActionResult> Edit(int id)
         {
             var employeeId = GetEmployeeId();
@@ -134,13 +115,9 @@ namespace GPMS.Controllers
                 return NotFound();
 
             await LoadDesignations();
-
             return View(emp);
         }
 
-        // =========================================
-        // EDIT (POST)
-        // =========================================
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(int id, Employee emp)
@@ -162,15 +139,12 @@ namespace GPMS.Controllers
                     if (existing == null)
                         return NotFound();
 
-                    // ✅ Update only safe fields
                     existing.EmployeeName = emp.EmployeeName;
                     existing.Email = emp.Email;
                     existing.Username = emp.Username;
                     existing.DesignationId = emp.DesignationId;
                     existing.SystemRole = emp.SystemRole;
                     existing.IsAdmin = emp.IsAdmin;
-
-                    // ❌ Do NOT touch password-related fields
 
                     await _context.SaveChangesAsync();
 
@@ -191,32 +165,10 @@ namespace GPMS.Controllers
             return View(emp);
         }
 
-        // =========================================
-        // DELETE (GET)
-        // =========================================
-        public async Task<IActionResult> Delete(int id)
-        {
-            var employeeId = GetEmployeeId();
-
-            if (!await _permissionService.HasPermission(employeeId, null, "DeleteEmployee"))
-                return Forbid();
-
-            var emp = await _context.Employees
-                .Include(e => e.Designation)
-                .FirstOrDefaultAsync(e => e.EmployeeId == id);
-
-            if (emp == null)
-                return NotFound();
-
-            return View(emp);
-        }
-
-        // =========================================
-        // DELETE (POST)
-        // =========================================
-        [HttpPost, ActionName("Delete")]
+        // ✅ FINAL DELETE METHOD (POST ONLY)
+        [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> DeleteConfirmed(int id)
+        public async Task<IActionResult> Delete(int id)
         {
             var employeeId = GetEmployeeId();
 
@@ -225,20 +177,51 @@ namespace GPMS.Controllers
 
             var emp = await _context.Employees.FindAsync(id);
 
-            if (emp != null)
-            {
-                _context.Employees.Remove(emp);
-                await _context.SaveChangesAsync();
+            if (emp == null)
+                return NotFound();
 
-                TempData["Success"] = "Employee deleted successfully.";
+            // ❌ Admin cannot be deleted
+            if (emp.IsAdmin)
+            {
+                TempData["Error"] = "Admin user cannot be deleted.";
+                return RedirectToAction(nameof(Index));
             }
 
+            // 🔴 CHECK ASSIGNMENTS
+            bool assignedToProject = await _context.Assignments
+                .AnyAsync(a => a.EmployeeId == id && a.ProjectId != null);
+
+            bool assignedToModule = await _context.Assignments
+                .AnyAsync(a => a.EmployeeId == id && a.ModuleId != null);
+
+            bool assignedToTask = await _context.Assignments
+                .AnyAsync(a => a.EmployeeId == id && a.TaskId != null);
+
+            // 🔴 SHOW SPECIFIC WARNING
+            if (assignedToProject)
+            {
+                TempData["Error"] = "Cannot delete employee. Assigned to a project.";
+                return RedirectToAction(nameof(Index));
+            }
+            else if (assignedToModule)
+            {
+                TempData["Error"] = "Cannot delete employee. Assigned to a module.";
+                return RedirectToAction(nameof(Index));
+            }
+            else if (assignedToTask)
+            {
+                TempData["Error"] = "Cannot delete employee. Assigned to a task.";
+                return RedirectToAction(nameof(Index));
+            }
+
+            // ✅ DELETE
+            _context.Employees.Remove(emp);
+            await _context.SaveChangesAsync();
+
+            TempData["Success"] = "Employee deleted successfully.";
             return RedirectToAction(nameof(Index));
         }
 
-        // =========================================
-        // 🔁 HELPER: Load Designations Dropdown
-        // =========================================
         private async System.Threading.Tasks.Task LoadDesignations()
         {
             ViewBag.DesignationList = await _context.Designations
