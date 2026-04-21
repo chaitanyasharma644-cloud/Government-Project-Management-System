@@ -19,7 +19,7 @@
         }
     </div>
 
-    <!-- FILTER / SEARCH -->
+    <!-- 🔥 FILTER / SEARCH (UPDATED) -->
     <div class="search-bar module-search-bar">
 
         <select class="form-control" id="projectFilter">
@@ -36,7 +36,21 @@
                class="form-control"
                placeholder="Search modules..." />
 
-        <button class="btn btn-primary-custom" onclick="searchModules()">Search</button>
+        <!-- ✅ NEW DATE FILTERS -->
+        <input type="date" id="startDate" class="form-control" />
+        <input type="date" id="endDate" class="form-control" />
+
+        <!-- ✅ STATUS FILTER -->
+        <select id="status" class="form-control">
+            <option value="">All Status</option>
+            <option value="Ongoing">Ongoing</option>
+            <option value="Completed">Completed</option>
+        </select>
+
+        <button class="btn btn-primary-custom" onclick="filterModules()">Search</button>
+
+        <!-- ✅ EXPORT BUTTON -->
+        <button class="btn btn-success" onclick="exportExcel()">Export</button>
 
     </div>
 
@@ -53,10 +67,13 @@
             bool canEdit = perms.Contains("EditModule");
             bool canDelete = perms.Contains("DeleteModule");
 
-            <div class="card module" data-project="@m.ProjectId">
+            <div class="card module"
+                 data-project="@m.ProjectId"
+                 data-start="@m.ModuleStartDate?.ToString("yyyy-MM-dd")"
+                 data-end="@m.ModuleEndDate?.ToString("yyyy-MM-dd")">
+
                 <div class="card-content">
 
-                    <!-- TOP -->
                     <div class="card-top">
                         <h3 class="module-name">@m.ModuleName</h3>
 
@@ -67,7 +84,6 @@
 
                 </div>
 
-                <!-- META -->
                 <div class="card-meta">
                     <span>🎯 @m.Tasks.Count tasks</span>
                     <span>📅 @m.ModuleStartDate?.ToString("MMM dd, yyyy")</span>
@@ -76,7 +92,6 @@
 
                 <hr />
 
-                <!-- ACTIONS -->
                 <div>
 
                     @if (canView)
@@ -118,30 +133,56 @@
 
         let searchInput = document.getElementById("moduleSearch").value.toLowerCase();
         let projectId = document.getElementById("projectFilter").value;
+        let start = document.getElementById("startDate").value;
+        let end = document.getElementById("endDate").value;
+        let status = document.getElementById("status").value.toLowerCase();
 
         let cards = document.querySelectorAll(".card.module");
 
         cards.forEach(card => {
 
             let name = card.querySelector(".module-name").innerText.toLowerCase();
+            let moduleStatus = card.querySelector(".status").innerText.toLowerCase();
 
-            // ⚠️ you need projectId stored in card (we'll fix below)
             let cardProjectId = card.getAttribute("data-project");
+            let startDate = card.getAttribute("data-start");
+            let endDate = card.getAttribute("data-end");
 
-            let matchSearch = name.includes(searchInput);
-            let matchProject = !projectId || cardProjectId === projectId;
+            let match = true;
 
-            if (matchSearch && matchProject) {
-                card.style.display = "block";
-            } else {
-                card.style.display = "none";
-            }
+            // 🔍 SEARCH
+            if (searchInput && !name.includes(searchInput))
+                match = false;
 
+            // 📁 PROJECT
+            if (projectId && cardProjectId !== projectId)
+                match = false;
+
+            // 📌 STATUS
+            if (status && moduleStatus !== status)
+                match = false;
+
+            // 📅 START DATE
+            if (start && startDate && startDate < start)
+                match = false;
+
+            // 📅 END DATE
+            if (end && endDate && endDate > end)
+                match = false;
+
+            card.style.display = match ? "block" : "none";
         });
     }
 
-    document.getElementById("moduleSearch").addEventListener("keyup", filterModules);
+    function exportExcel() {
+        let start = document.getElementById("startDate").value;
+        let end = document.getElementById("endDate").value;
+        let status = document.getElementById("status").value;
 
+        window.location.href = `/Module/ExportToExcel?startDate=${start}&endDate=${end}&status=${status}`;
+    }
+
+    document.getElementById("moduleSearch").addEventListener("keyup", filterModules);
     document.getElementById("projectFilter").addEventListener("change", filterModules);
 
 </script>
