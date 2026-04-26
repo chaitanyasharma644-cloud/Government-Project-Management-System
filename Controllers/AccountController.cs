@@ -1,13 +1,15 @@
 ﻿using GPMS.Data;
 using GPMS.Models;
+using GPMS.Services;
 using GPMS.ViewModels;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
+using System.Security.Cryptography;
 
 namespace GPMS.Controllers
 {
@@ -16,11 +18,16 @@ namespace GPMS.Controllers
     {
         private readonly AppDbContext _db;
         private readonly IPasswordHasher<Employee> _passwordHasher;
+        private readonly EmailService _emailService;
 
-        public AccountController(AppDbContext db, IPasswordHasher<Employee> passwordHasher)
+        public AccountController(
+            AppDbContext db,
+            IPasswordHasher<Employee> passwordHasher,
+            EmailService emailService)
         {
             _db = db;
             _passwordHasher = passwordHasher;
+            _emailService = emailService;
         }
 
         // =========================================
@@ -41,18 +48,17 @@ namespace GPMS.Controllers
         // LOGIN (POST)
         // =========================================
         [HttpPost]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> Login(LoginViewModel model)
         {
             var sessionCaptcha = HttpContext.Session.GetString("CaptchaCode");
 
-            // 🔒 CAPTCHA VALIDATION
             if (model.Captcha != sessionCaptcha)
             {
                 ModelState.AddModelError("", "Invalid captcha.");
                 return ReloadCaptcha(model);
             }
 
-            // 🔍 USER FETCH
             var user = await _db.Employees
                 .FirstOrDefaultAsync(x => x.Username == model.Username);
 
@@ -62,7 +68,6 @@ namespace GPMS.Controllers
                 return ReloadCaptcha(model);
             }
 
-            // 🔐 PASSWORD VALIDATION (HASH + fallback)
             bool passwordValid = false;
 
             if (!string.IsNullOrWhiteSpace(user.Epassword))
@@ -90,9 +95,6 @@ namespace GPMS.Controllers
                 return ReloadCaptcha(model);
             }
 
-            // =========================================
-            // 🔥 CLAIMS
-            // =========================================
             var claims = new List<Claim>
             {
                 new Claim(ClaimTypes.Name, user.EmployeeName),
@@ -112,17 +114,11 @@ namespace GPMS.Controllers
                 new AuthenticationProperties { IsPersistent = true }
             );
 
-            // =========================================
-            // 🔥 SESSION
-            // =========================================
             HttpContext.Session.SetInt32("EmployeeId", user.EmployeeId);
             HttpContext.Session.SetString("EmployeeName", user.EmployeeName);
             HttpContext.Session.SetString("UserRole", user.SystemRole ?? "User");
             HttpContext.Session.SetString("IsAdmin", user.IsAdmin.ToString());
 
-            // =========================================
-            // 🔐 PASSWORD POLICY
-            // =========================================
             bool passwordExpired =
                 !user.PasswordChangedAt.HasValue ||
                 user.PasswordChangedAt.Value.AddMonths(4) <= DateTime.Now;
@@ -170,7 +166,6 @@ namespace GPMS.Controllers
             if (user == null)
                 return RedirectToAction("Login");
 
-            // 🔐 VERIFY CURRENT PASSWORD
             bool valid = false;
 
             try
@@ -200,10 +195,18 @@ namespace GPMS.Controllers
                 return View(model);
             }
 
-            // 🔐 UPDATE PASSWORD
+            if (!IsValidPassword(model.NewPassword))
+            {
+                ModelState.AddModelError("NewPassword",
+                    "Password must be at least 8 characters and include uppercase, lowercase, number, and special character.");
+                return View(model);
+            }
+
             user.Epassword = _passwordHasher.HashPassword(user, model.NewPassword);
             user.IsFirstLogin = false;
             user.PasswordChangedAt = DateTime.Now;
+            user.ResetToken = null;
+            user.ResetTokenExpiry = null;
 
             await _db.SaveChangesAsync();
 
@@ -212,6 +215,127 @@ namespace GPMS.Controllers
             TempData["Success"] = "Password changed successfully.";
 
             return RedirectToAction("Index", "Dashboard");
+        }
+
+        // =========================================
+        // FORGOT PASSWORD (GET)
+        // =========================================
+        [HttpGet]
+        public IActionResult ForgotPassword()
+        {
+            return View(new ForgotPasswordViewModel());
+        }
+
+        // =========================================
+        // FORGOT PASSWORD (POST)
+        // =========================================
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ForgotPassword(ForgotPasswordViewModel model)
+        {
+            if (!ModelState.IsValid)
+                return View(model);
+
+            var user = await _db.Employees
+                .FirstOrDefaultAsync(e =>
+                    e.Email == model.EmailOrUsername ||
+                    e.Username == model.EmailOrUsername);
+
+            if (user != null)
+            {
+                var tokenBytes = RandomNumberGenerator.GetBytes(32);
+                var token = Convert.ToBase64String(tokenBytes)
+                    .Replace("+", "-")
+                    .Replace("/", "_")
+                    .Replace("=", "");
+
+                user.ResetToken = token;
+                user.ResetTokenExpiry = DateTime.UtcNow.AddMinutes(30);
+
+                await _db.SaveChangesAsync();
+
+                var resetLink = Url.Action(
+                    "ResetPassword",
+                    "Account",
+                    new { token = token, email = user.Email },
+                    protocol: Request.Scheme);
+
+                var body = $@"
+                    <p>Hello {user.EmployeeName},</p>
+                    <p>You requested a password reset for your GPMS account.</p>
+                    <p>Click the link below to reset your password:</p>
+                    <p><a href='{resetLink}'>Reset Password</a></p>
+                    <p>This link will expire in 30 minutes.</p>
+                    <p>If you did not request this, please ignore this email.</p>";
+
+                await _emailService.SendEmailAsync(user.Email, "GPMS Password Reset", body);
+            }
+
+            TempData["Success"] = "If the account exists, a password reset link has been sent to the registered email.";
+            return RedirectToAction("Login");
+        }
+
+        // =========================================
+        // RESET PASSWORD (GET)
+        // =========================================
+        [HttpGet]
+        public IActionResult ResetPassword(string token, string email)
+        {
+            if (string.IsNullOrWhiteSpace(token) || string.IsNullOrWhiteSpace(email))
+            {
+                TempData["Error"] = "Invalid reset link.";
+                return RedirectToAction("ForgotPassword");
+            }
+
+            var model = new ResetPasswordViewModel
+            {
+                Token = token,
+                Email = email
+            };
+
+            return View(model);
+        }
+
+        // =========================================
+        // RESET PASSWORD (POST)
+        // =========================================
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ResetPassword(ResetPasswordViewModel model)
+        {
+            if (!ModelState.IsValid)
+                return View(model);
+
+            if (!IsValidPassword(model.NewPassword))
+            {
+                ModelState.AddModelError("NewPassword",
+                    "Password must be at least 8 characters and include uppercase, lowercase, number, and special character.");
+                return View(model);
+            }
+
+            var user = await _db.Employees
+                .FirstOrDefaultAsync(e => e.Email == model.Email);
+
+            if (user == null ||
+                string.IsNullOrWhiteSpace(user.ResetToken) ||
+                user.ResetToken != model.Token ||
+                !user.ResetTokenExpiry.HasValue ||
+                user.ResetTokenExpiry.Value < DateTime.UtcNow)
+            {
+                TempData["Error"] = "Invalid or expired reset link.";
+                return RedirectToAction("ForgotPassword");
+            }
+
+            user.Epassword = _passwordHasher.HashPassword(user, model.NewPassword);
+            user.ResetToken = null;
+            user.ResetTokenExpiry = null;
+            user.IsFirstLogin = false;
+            user.PasswordChangedAt = DateTime.Now;
+
+            await _db.SaveChangesAsync();
+
+            TempData["Success"] = "Password reset successfully. Please log in.";
+            return RedirectToAction("Login");
         }
 
         // =========================================
@@ -230,7 +354,7 @@ namespace GPMS.Controllers
         }
 
         // =========================================
-        // 🔁 HELPER: Reload CAPTCHA
+        // HELPER: Reload CAPTCHA
         // =========================================
         private IActionResult ReloadCaptcha(LoginViewModel model)
         {
@@ -240,7 +364,7 @@ namespace GPMS.Controllers
         }
 
         // =========================================
-        // 🔢 CAPTCHA GENERATOR
+        // CAPTCHA GENERATOR
         // =========================================
         private string GenerateCaptcha()
         {
@@ -248,6 +372,22 @@ namespace GPMS.Controllers
             var random = new Random();
             return new string(Enumerable.Repeat(chars, 5)
                 .Select(s => s[random.Next(s.Length)]).ToArray());
+        }
+
+        // =========================================
+        // PASSWORD POLICY
+        // =========================================
+        private bool IsValidPassword(string password)
+        {
+            if (string.IsNullOrWhiteSpace(password) || password.Length < 8)
+                return false;
+
+            bool hasUpper = password.Any(char.IsUpper);
+            bool hasLower = password.Any(char.IsLower);
+            bool hasDigit = password.Any(char.IsDigit);
+            bool hasSpecial = password.Any(ch => !char.IsLetterOrDigit(ch));
+
+            return hasUpper && hasLower && hasDigit && hasSpecial;
         }
     }
 }

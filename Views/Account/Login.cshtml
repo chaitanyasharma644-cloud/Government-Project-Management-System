@@ -4,14 +4,12 @@
     Layout = null;
 }
 
-
 <!DOCTYPE html>
 <html>
 <head>
     <title>Government Project Management System</title>
 
     <style>
-
             body {
                 margin: 0;
                 font-family: Segoe UI;
@@ -23,8 +21,6 @@
                 height: 100vh;
                 width: 100%;
             }
-
-            /* LEFT PANEL */
 
             .left {
                 flex: 65%;
@@ -53,8 +49,6 @@
                 color: #5a6b8a;
                 font-size: 16px;
             }
-
-            /* RIGHT PANEL */
 
             .right {
                 flex: 35%;
@@ -85,6 +79,7 @@
                 border-radius: 6px;
                 border: 1px solid #d2d8e5;
                 font-size: 14px;
+                box-sizing: border-box;
             }
 
             .captcha-box {
@@ -128,6 +123,26 @@
                 margin-bottom: 15px;
             }
 
+            .forgot-password {
+                text-align: right;
+                margin-top: -10px;
+                margin-bottom: 20px;
+            }
+
+                .forgot-password a {
+                    color: #2f6fed;
+                    text-decoration: none;
+                    font-size: 14px;
+                }
+
+                    .forgot-password a:hover {
+                        text-decoration: underline;
+                    }
+
+            .success {
+                color: green;
+                margin-bottom: 15px;
+            }
     </style>
 </head>
 
@@ -135,10 +150,7 @@
 
     <div class="container">
 
-        <!-- LEFT SIDE -->
-
         <div class="left">
-
             <img src="@Url.Content("~/Emblem_of_India.png")" />
 
             <div class="title">
@@ -148,14 +160,21 @@
             <div class="subtitle">
                 Government of Jammu and Kashmir
             </div>
-
         </div>
-
-        <!-- RIGHT SIDE -->
 
         <div class="right">
 
             <h2>Sign In</h2>
+
+            @if (TempData["Success"] != null)
+            {
+                <div class="success">@TempData["Success"]</div>
+            }
+
+            @if (TempData["Error"] != null)
+            {
+                <div class="error">@TempData["Error"]</div>
+            }
 
             @foreach (var error in ViewData.ModelState.Values.SelectMany(v => v.Errors))
             {
@@ -163,6 +182,7 @@
             }
 
             <form method="post">
+                @Html.AntiForgeryToken()
 
                 <label>Username</label>
                 <input asp-for="Username" />
@@ -170,22 +190,23 @@
                 <label>Password</label>
                 <input asp-for="Password" type="password" />
 
+                <div class="forgot-password">
+                    <a asp-controller="Account" asp-action="ForgotPassword">Forgot Password?</a>
+                </div>
+
                 <label>Captcha</label>
 
                 <div class="captcha-box">
-
                     <div class="captcha">
                         @Model.CaptchaCode
                     </div>
 
                     <input asp-for="Captcha" placeholder="Enter captcha" />
-
                 </div>
 
                 <button type="submit">
                     Sign In
                 </button>
-
             </form>
 
         </div>

@@ -58,6 +58,14 @@ public partial class Employee
     [Column("PasswordChangedAt", TypeName = "datetime")]
     public DateTime? PasswordChangedAt { get; set; }
 
+    [Column("ResetToken")]
+    [StringLength(200)]
+    [Unicode(false)]
+    public string? ResetToken { get; set; }
+
+    [Column("ResetTokenExpiry")]
+    public DateTime? ResetTokenExpiry { get; set; }
+
     // =========================================
     // NAVIGATION PROPERTIES
     // =========================================

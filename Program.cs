@@ -1,5 +1,6 @@
 using GPMS.Data;
 using GPMS.Filters;
+using GPMS.Models;
 using GPMS.Services;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Identity;
@@ -20,6 +21,11 @@ builder.Services.AddScoped<PermissionService>();
 builder.Services.AddScoped<ForcePasswordChangeFilter>();
 builder.Services.AddScoped<IPasswordHasher<GPMS.Models.Employee>, PasswordHasher<GPMS.Models.Employee>>();
 
+builder.Services.Configure<EmailSettings>(
+    builder.Configuration.GetSection("EmailSettings"));
+
+builder.Services.AddScoped<EmailService>();
+
 // Add MVC + global filter
 builder.Services.AddControllersWithViews(options =>
 {
@@ -37,6 +43,9 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
         options.Cookie.SameSite = SameSiteMode.Lax;
         options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
     });
+
+// ✅ Add Authorization
+builder.Services.AddAuthorization();
 
 // Session
 builder.Services.AddSession(options =>
