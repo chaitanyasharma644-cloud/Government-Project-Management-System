@@ -21,8 +21,8 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
     {
         options.LoginPath = "/Account/Login";
 
-        // 🔥 IMPORTANT (fix HTTPS cookie warning)
-        options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
+        // Fixed for HTTP localhost
+        options.Cookie.SecurePolicy = CookieSecurePolicy.SameAsRequest;
         options.Cookie.SameSite = SameSiteMode.Lax;
     });
 
@@ -33,8 +33,8 @@ builder.Services.AddSession(options =>
     options.Cookie.HttpOnly = true;
     options.Cookie.IsEssential = true;
 
-    // 🔥 Secure session cookies
-    options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
+    // Fixed for HTTP localhost
+    options.Cookie.SecurePolicy = CookieSecurePolicy.SameAsRequest;
 });
 
 // ==============================
