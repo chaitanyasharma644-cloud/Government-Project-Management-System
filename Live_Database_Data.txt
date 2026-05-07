@@ -1,0 +1,33 @@
+====== LIVE MICROSOFT SQL DATABASE STATUS ======
+
+--> FETCHING SERVER TABLES:
+┌─────────┬─────────────────────────┐
+│ (index) │ name                    │
+├─────────┼─────────────────────────┤
+│ 0       │ '__EFMigrationsHistory' │
+│ 1       │ 'Designation'           │
+│ 2       │ 'Permission'            │
+│ 3       │ 'Project'               │
+│ 4       │ 'Roles'                 │
+│ 5       │ 'Employee'              │
+│ 6       │ 'Module'                │
+│ 7       │ 'RolePermission'        │
+│ 8       │ 'Task'                  │
+│ 9       │ 'Assignment'            │
+│ 10      │ 'Document'              │
+└─────────┴─────────────────────────┘
+
+--> EXTRACTING [Roles] TABLE:
+┌─────────┬─────────┬────────────────────────┬──────────────────┬────────────────┐
+│ (index) │ role_id │ role_name              │ role_description │ parent_role_id │
+├─────────┼─────────┼────────────────────────┼──────────────────┼────────────────┤
+│ 0       │ 1       │ 'System Administrator' │ null             │ null           │
+│ 1       │ 2       │ 'Project Manager'      │ null             │ null           │
+└─────────┴─────────┴────────────────────────┴──────────────────┴────────────────┘
+
+--> EXTRACTING [__EFMigrationsHistory] TABLE:
+┌─────────┬────────────────────────────────────────┬────────────────┐
+│ (index) │ MigrationId                            │ ProductVersion │
+├─────────┼────────────────────────────────────────┼────────────────┤
+│ 0       │ '20260429185353_Initial_Mac_Migration' │ '8.0.0'        │
+└─────────┴────────────────────────────────────────┴────────────────┘

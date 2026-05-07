@@ -1,0 +1,16 @@
+{
+    "mssql.connections": [
+        {
+            "server": "localhost,1433",
+            "database": "GPMS_Desktop",
+            "user": "sa",
+            "password": "",
+            "profileName": "GPMS Live System Database",
+            "encrypt": false,
+            "trustServerCertificate": true,
+            "groupId": "ROOT",
+            "id": "ce2daf70-e97b-427b-b44d-a93e989dd931"
+        }
+    ],
+    "dotnet.server.useOmisharp": false
+}
