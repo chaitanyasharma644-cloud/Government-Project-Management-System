@@ -1,4 +1,4 @@
-﻿using GPMS.Data;
+using GPMS.Data;
 using GPMS.ViewModels;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -26,6 +26,9 @@ namespace GPMS.Controllers
 
             return View(new LoginViewModel
             {
+                Username = string.Empty,
+                Password = string.Empty,
+                Captcha = string.Empty,
                 CaptchaCode = captcha
             });
         }
@@ -33,9 +36,16 @@ namespace GPMS.Controllers
         [HttpPost]
         public async Task<IActionResult> Login(LoginViewModel model)
         {
+            if (!ModelState.IsValid)
+            {
+                model.CaptchaCode = GenerateCaptcha();
+                HttpContext.Session.SetString("CaptchaCode", model.CaptchaCode);
+                return View(model);
+            }
+
             var sessionCaptcha = HttpContext.Session.GetString("CaptchaCode");
 
-            if (model.Captcha != sessionCaptcha)
+            if (string.IsNullOrEmpty(model.Captcha) || !string.Equals(model.Captcha.Trim(), sessionCaptcha, StringComparison.OrdinalIgnoreCase))
             {
                 ModelState.AddModelError("", "Invalid captcha.");
                 model.CaptchaCode = GenerateCaptcha();

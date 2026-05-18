@@ -26,13 +26,13 @@ namespace GPMS.Controllers
         {
             var tasks = _context.Tasks
                 .Include(t => t.Module)
-                .ThenInclude(m => m.Project)
+                .ThenInclude(m => m!.Project)
                 .AsQueryable();
 
             // 🔍 Filter by Project
             if (projectId.HasValue)
             {
-                tasks = tasks.Where(t => t.Module.ProjectId == projectId);
+                tasks = tasks.Where(t => t.Module != null && t.Module.ProjectId == projectId);
             }
 
             // 🔍 Filter by Module
@@ -72,7 +72,7 @@ namespace GPMS.Controllers
         {
             var task = await _context.Tasks
                 .Include(t => t.Module)
-                .ThenInclude(m => m.Project)
+                .ThenInclude(m => m!.Project)
                 .FirstOrDefaultAsync(t => t.TaskId == id);
 
             if (task == null)
@@ -114,8 +114,10 @@ namespace GPMS.Controllers
             // 2. Identify EXACTLY which field is causing the failure
             if (!ModelState.IsValid)
             {
-                var errors = ModelState.SelectMany(x => x.Value.Errors)
-                                       .Select(x => x.ErrorMessage).ToList();
+                var errors = ModelState.Values
+                                       .SelectMany(v => v.Errors)
+                                       .Select(e => e.ErrorMessage)
+                                       .ToList();
 
                 // This will stop the app and show you the errors in the browser
                 return Content("Validation Failed: " + string.Join(" | ", errors));

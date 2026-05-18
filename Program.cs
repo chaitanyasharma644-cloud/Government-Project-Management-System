@@ -51,7 +51,7 @@ if (!app.Environment.IsDevelopment())
 }
 
 // 🔐 HTTPS
-app.UseHttpsRedirection();
+// app.UseHttpsRedirection();
 
 // Static files (css/js/images)
 app.UseStaticFiles();
